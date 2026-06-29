@@ -205,7 +205,7 @@ jobs:
         run: |
           OUTPUT_BRANCH="sonar/batch-output-${{ github.run_number }}"
           git checkout -b "$OUTPUT_BRANCH"
-          git add output/issues.json output/batches.json
+          git add -f output/issues.json output/batches.json
           git commit -m "ci: sonar batch output — run #${{ github.run_number }}"
           git push origin "$OUTPUT_BRANCH"
 
