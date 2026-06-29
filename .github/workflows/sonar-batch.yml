@@ -26,20 +26,14 @@ permissions:
 
 jobs:
   sonar-batch:
-    runs-on: ubuntu-latest
-
-    services:
-      sonarqube:
-        image: sonarqube:lts-community
-        ports:
-          - 9000:9000
-        # No Docker health check — sonarqube:lts-community (JRE base image) has no
-        # curl/wget, so --health-cmd would always fail. Readiness is polled from the
-        # runner in the "Wait for SonarQube to be fully UP" step below.
+    # windows-latest: required for .NET Framework 4.8 (msbuild).
+    # Service containers are Linux-only on GitHub-hosted runners, so SonarQube
+    # is started manually via docker run below.
+    runs-on: windows-latest
 
     steps:
       # -----------------------------------------------------------------------
-      # Step 1-5: Toolchain setup
+      # Toolchain setup
       # -----------------------------------------------------------------------
       - name: Checkout
         uses: actions/checkout@v4
@@ -57,21 +51,23 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
       - name: Install dotnet-sonarscanner
-        run: |
-          dotnet tool install --global dotnet-sonarscanner
-          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+        run: dotnet tool install --global dotnet-sonarscanner
 
       - name: Install Python dependencies
         run: pip install requests
 
-      - name: Install Mono MSBuild (.NET Framework 4.8 on Linux)
-        run: sudo apt-get update -qq && sudo apt-get install -y mono-msbuild
+      # -----------------------------------------------------------------------
+      # Start SonarQube (manual docker run — service containers require Linux)
+      # -----------------------------------------------------------------------
+      - name: Start SonarQube container
+        run: docker run -d --name sonarqube -p 9000:9000 sonarqube:lts-community
 
-      # -----------------------------------------------------------------------
-      # Step 6: Bootstrap — wait for SonarQube, generate token, create project
-      # -----------------------------------------------------------------------
       - name: Wait for SonarQube to be fully UP
+        shell: bash
         run: |
           echo "Polling SonarQube status endpoint..."
           STATUS=""
@@ -90,10 +86,14 @@ jobs:
             exit 1
           fi
 
+      # -----------------------------------------------------------------------
+      # Bootstrap — generate token, create project
+      # SonarQube 9.9.x LTS: admin:admin works on fresh ephemeral instance.
+      # Use sonar.login (not sonar.token) — sonar.token is 10.x syntax.
+      # -----------------------------------------------------------------------
       - name: Bootstrap — generate token and create project
+        shell: bash
         run: |
-          # SonarQube 9.9.x LTS: admin:admin works for API on fresh ephemeral instance.
-          # Use sonar.login (not sonar.token) — sonar.token is the 10.x syntax.
           TOKEN_JSON=$(curl -sf -X POST -u "admin:admin" \
             "http://localhost:9000/api/user_tokens/generate" \
             -d "name=ci-token-${{ github.run_number }}")
@@ -103,29 +103,36 @@ jobs:
             "http://localhost:9000/api/projects/create" \
             -d "project=sonar-test-bad-code&name=SonarTestBadCode" > /dev/null || true
 
-          echo "SONARQUBE_TOKEN=$TOKEN" >> $GITHUB_ENV
+          echo "SONARQUBE_TOKEN=$TOKEN" >> "$GITHUB_ENV"
           echo "Bootstrap complete — token and project ready"
 
       # -----------------------------------------------------------------------
-      # Step 7-9: SonarQube scan
+      # SonarQube scan
+      # PowerShell used for sonarscanner steps to avoid Git Bash path conversion
+      # mangling the /k: /d: argument syntax.
       # -----------------------------------------------------------------------
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: SonarScanner begin
         run: |
-          dotnet sonarscanner begin \
-            /k:"sonar-test-bad-code" \
-            /d:sonar.host.url="http://localhost:9000" \
-            /d:sonar.login="$SONARQUBE_TOKEN" \
+          dotnet sonarscanner begin `
+            /k:"sonar-test-bad-code" `
+            /d:sonar.host.url="http://localhost:9000" `
+            /d:sonar.login="$env:SONARQUBE_TOKEN" `
             /d:sonar.exclusions="scripts/**,output/**"
 
-      - name: Build (.NET Framework 4.8 via Mono MSBuild)
+      - name: Build (.NET Framework 4.8)
         run: msbuild SonarTestBadCode.sln /p:Configuration=Release
 
       - name: SonarScanner end
-        run: dotnet sonarscanner end /d:sonar.login="$SONARQUBE_TOKEN"
+        run: dotnet sonarscanner end /d:sonar.login="$env:SONARQUBE_TOKEN"
 
       - name: Wait for SonarQube CE task to complete
+        shell: bash
         run: |
-          # Parse report-task.txt (Java Properties format — split on first '=' only)
           CE_TASK_URL=$(python3 - << 'PYEOF'
           props = {}
           with open('.sonarqube/out/.sonar/report-task.txt') as f:
@@ -133,7 +140,6 @@ jobs:
                   line = line.strip()
                   if '=' in line and not line.startswith('#'):
                       k, v = line.split('=', 1)
-                      # Unescape Java Properties encoding (\: and \= in URL values)
                       props[k] = v.replace('\\:', ':').replace('\\=', '=').replace('\\/', '/')
           print(props.get('ceTaskUrl', ''))
           PYEOF
@@ -160,17 +166,10 @@ jobs:
           fi
 
       # -----------------------------------------------------------------------
-      # Step 10: Configure git
-      # -----------------------------------------------------------------------
-      - name: Configure git identity
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      # -----------------------------------------------------------------------
-      # Steps 12-13: Fetch and batch issues
+      # Fetch and batch issues
       # -----------------------------------------------------------------------
       - name: Fetch issues from SonarQube
+        shell: bash
         env:
           SONARQUBE_URL: http://localhost:9000
           SONAR_PROJECT_KEYS: ${{ inputs.project_keys }}
@@ -179,13 +178,14 @@ jobs:
         run: python scripts/sonar/fetch_issues.py
 
       - name: Batch issues by file
+        shell: bash
         env:
           WORKSPACE_ROOT: ${{ github.workspace }}
           MAX_FILES: ${{ inputs.max_files }}
         run: python scripts/sonar/batch_issues.py
 
       # -----------------------------------------------------------------------
-      # Step 14: Upload artifacts
+      # Upload artifacts and open review PR
       # -----------------------------------------------------------------------
       - name: Upload output as workflow artifact
         uses: actions/upload-artifact@v4
@@ -193,10 +193,8 @@ jobs:
           name: sonar-batch-output-run-${{ github.run_number }}
           path: output/
 
-      # -----------------------------------------------------------------------
-      # Open PR so the output files can be reviewed in the GitHub UI
-      # -----------------------------------------------------------------------
       - name: Commit output files and open review PR
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -216,8 +214,8 @@ jobs:
 
           | Metric | Value |
           |--------|-------|
-          | Issues fetched | $ISSUES_COUNT |
-          | Batches created | $BATCHES_COUNT |
+          | Issues fetched | \$ISSUES_COUNT |
+          | Batches created | \$BATCHES_COUNT |
           | Severities | ${{ inputs.severities }} |
           | Language filter | ${{ inputs.language_filter }} |
 
