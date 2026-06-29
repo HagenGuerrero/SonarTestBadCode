@@ -62,7 +62,11 @@ jobs:
 
       # -----------------------------------------------------------------------
       # Start SonarQube (manual docker run — service containers require Linux)
+      # Windows runners default to Windows containers; switch to Linux engine first.
       # -----------------------------------------------------------------------
+      - name: Switch Docker to Linux containers mode
+        run: '& "C:\Program Files\Docker\Docker\DockerCli.exe" -SwitchLinuxEngine'
+
       - name: Start SonarQube container
         run: docker run -d --name sonarqube -p 9000:9000 sonarqube:lts-community
 
