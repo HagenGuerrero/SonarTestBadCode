@@ -33,11 +33,9 @@ jobs:
         image: sonarqube:lts-community
         ports:
           - 9000:9000
-        options: >-
-          --health-cmd "curl -f http://localhost:9000/api/system/status || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 18
+        # No Docker health check — sonarqube:lts-community (JRE base image) has no
+        # curl/wget, so --health-cmd would always fail. Readiness is polled from the
+        # runner in the "Wait for SonarQube to be fully UP" step below.
 
     steps:
       # -----------------------------------------------------------------------
