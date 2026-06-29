@@ -1,1 +1,1 @@
-C:\repos\SonarTestBadCode\.sonarqube\out\0
+C:\repos\sonartestbadcode\.sonarqube\out\0
