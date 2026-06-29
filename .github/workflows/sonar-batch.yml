@@ -26,10 +26,20 @@ permissions:
 
 jobs:
   sonar-batch:
-    # windows-latest: required for .NET Framework 4.8 (msbuild).
-    # Service containers are Linux-only on GitHub-hosted runners, so SonarQube
-    # is started manually via docker run below.
-    runs-on: windows-latest
+    # ubuntu-latest: required for SonarQube service container (Linux image).
+    # .NET Framework 4.8 is built via Mono MSBuild installed from the official
+    # Mono Project repository (Ubuntu apt does not ship mono-msbuild).
+    # GitHub-hosted Windows runners use Docker CE (not Desktop) and cannot run
+    # Linux containers, so the runner must stay on Ubuntu.
+    runs-on: ubuntu-latest
+
+    services:
+      sonarqube:
+        image: sonarqube:lts-community
+        ports:
+          - 9000:9000
+        # No health-cmd — the JRE base image has no curl/wget.
+        # Readiness is polled from the runner in the wait step below.
 
     steps:
       # -----------------------------------------------------------------------
@@ -51,27 +61,30 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up MSBuild
-        uses: microsoft/setup-msbuild@v2
-
       - name: Install dotnet-sonarscanner
-        run: dotnet tool install --global dotnet-sonarscanner
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
       - name: Install Python dependencies
         run: pip install requests
 
-      # -----------------------------------------------------------------------
-      # Start SonarQube (manual docker run — service containers require Linux)
-      # Windows runners default to Windows containers; switch to Linux engine first.
-      # -----------------------------------------------------------------------
-      - name: Switch Docker to Linux containers mode
-        run: '& "C:\Program Files\Docker\Docker\DockerCli.exe" -SwitchLinuxEngine'
+      - name: Install Mono MSBuild (official Mono Project repo — Ubuntu apt lacks mono-msbuild)
+        run: |
+          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 \
+            --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+          echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" \
+            | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+          sudo apt-get update -qq
+          sudo apt-get install -y mono-devel
 
-      - name: Start SonarQube container
-        run: docker run -d --name sonarqube -p 9000:9000 sonarqube:lts-community
-
+      # -----------------------------------------------------------------------
+      # Bootstrap — wait for SonarQube, generate token, create project
+      # SonarQube 9.9.x LTS: admin:admin works on a fresh ephemeral instance.
+      # Use sonar.login (not sonar.token) — sonar.token is 10.x syntax.
+      # Use projectKeys (not componentKeys) in REST API — returns full result set.
+      # -----------------------------------------------------------------------
       - name: Wait for SonarQube to be fully UP
-        shell: bash
         run: |
           echo "Polling SonarQube status endpoint..."
           STATUS=""
@@ -90,13 +103,7 @@ jobs:
             exit 1
           fi
 
-      # -----------------------------------------------------------------------
-      # Bootstrap — generate token, create project
-      # SonarQube 9.9.x LTS: admin:admin works on fresh ephemeral instance.
-      # Use sonar.login (not sonar.token) — sonar.token is 10.x syntax.
-      # -----------------------------------------------------------------------
       - name: Bootstrap — generate token and create project
-        shell: bash
         run: |
           TOKEN_JSON=$(curl -sf -X POST -u "admin:admin" \
             "http://localhost:9000/api/user_tokens/generate" \
@@ -112,8 +119,6 @@ jobs:
 
       # -----------------------------------------------------------------------
       # SonarQube scan
-      # PowerShell used for sonarscanner steps to avoid Git Bash path conversion
-      # mangling the /k: /d: argument syntax.
       # -----------------------------------------------------------------------
       - name: Configure git identity
         run: |
@@ -122,20 +127,19 @@ jobs:
 
       - name: SonarScanner begin
         run: |
-          dotnet sonarscanner begin `
-            /k:"sonar-test-bad-code" `
-            /d:sonar.host.url="http://localhost:9000" `
-            /d:sonar.login="$env:SONARQUBE_TOKEN" `
+          dotnet sonarscanner begin \
+            /k:"sonar-test-bad-code" \
+            /d:sonar.host.url="http://localhost:9000" \
+            /d:sonar.login="$SONARQUBE_TOKEN" \
             /d:sonar.exclusions="scripts/**,output/**"
 
-      - name: Build (.NET Framework 4.8)
+      - name: Build (.NET Framework 4.8 via Mono MSBuild)
         run: msbuild SonarTestBadCode.sln /p:Configuration=Release
 
       - name: SonarScanner end
-        run: dotnet sonarscanner end /d:sonar.login="$env:SONARQUBE_TOKEN"
+        run: dotnet sonarscanner end /d:sonar.login="$SONARQUBE_TOKEN"
 
       - name: Wait for SonarQube CE task to complete
-        shell: bash
         run: |
           CE_TASK_URL=$(python3 - << 'PYEOF'
           props = {}
@@ -173,7 +177,6 @@ jobs:
       # Fetch and batch issues
       # -----------------------------------------------------------------------
       - name: Fetch issues from SonarQube
-        shell: bash
         env:
           SONARQUBE_URL: http://localhost:9000
           SONAR_PROJECT_KEYS: ${{ inputs.project_keys }}
@@ -182,7 +185,6 @@ jobs:
         run: python scripts/sonar/fetch_issues.py
 
       - name: Batch issues by file
-        shell: bash
         env:
           WORKSPACE_ROOT: ${{ github.workspace }}
           MAX_FILES: ${{ inputs.max_files }}
@@ -198,7 +200,6 @@ jobs:
           path: output/
 
       - name: Commit output files and open review PR
-        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
