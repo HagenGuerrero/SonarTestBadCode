@@ -200,8 +200,6 @@ jobs:
           path: output/
 
       - name: Commit output files and open review PR
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           OUTPUT_BRANCH="sonar/batch-output-${{ github.run_number }}"
           git checkout -b "$OUTPUT_BRANCH"
@@ -214,25 +212,29 @@ jobs:
           BATCHES_COUNT=$(python3 -c \
             "import json; d=json.load(open('output/batches.json')); print(d['total_batches'])")
 
-          cat > /tmp/pr-body.md << EOF
+          REPO="${{ github.repository }}"
+          BASE="agent/batching"
+          PR_URL="https://github.com/${REPO}/compare/${BASE}...${OUTPUT_BRANCH}?expand=1"
+
+          cat >> "$GITHUB_STEP_SUMMARY" << EOF
           ## SonarQube Batch Output — Run #${{ github.run_number }}
 
           | Metric | Value |
           |--------|-------|
-          | Issues fetched | \$ISSUES_COUNT |
-          | Batches created | \$BATCHES_COUNT |
+          | Issues fetched | $ISSUES_COUNT |
+          | Batches created | $BATCHES_COUNT |
           | Severities | ${{ inputs.severities }} |
           | Language filter | ${{ inputs.language_filter }} |
+          | Output branch | \`$OUTPUT_BRANCH\` |
 
           ### Files to review
           - \`output/issues.json\` — raw issues from the SonarQube REST API
           - \`output/batches.json\` — issues grouped per-class → per-type → numeric batch ID
 
-          > This PR is for inspection only. Close without merging once verified.
+          ### [Open pull request →]($PR_URL)
+
+          > Click the link above to open a pre-filled PR from \`$OUTPUT_BRANCH\` → \`$BASE\`.
           EOF
 
-          gh pr create \
-            --title "[CI] SonarQube batch output — run #${{ github.run_number }}" \
-            --base agent/batching \
-            --head "$OUTPUT_BRANCH" \
-            --body-file /tmp/pr-body.md
+          echo "Branch pushed: $OUTPUT_BRANCH"
+          echo "Open PR at: $PR_URL"
