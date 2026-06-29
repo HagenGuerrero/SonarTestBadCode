@@ -62,15 +62,28 @@ scripts/
 
 ---
 
+## SonarQube version
+
+This project targets **SonarQube 9.9.x LTS**. Key 9.9.x compatibility rules:
+
+| Do | Don't |
+|----|-------|
+| `/d:sonar.login="TOKEN"` | `/d:sonar.token="TOKEN"` — 10.x syntax, fails on 9.9.x |
+| `projectKeys=KEY` in REST API | `componentKeys=KEY` — returns incomplete results on 9.9.x |
+| `pip install requests` and `auth=(token, "")` | No other auth formats needed |
+
+---
+
 ## Prerequisites
 
 - .NET Framework 4.8 SDK / MSBuild
-- Python 3.12+
-- Docker Desktop (for local SonarQube)
+- Python 3.12+ with `requests` (`pip install requests`)
+- Docker Desktop (for local SonarQube 9.9.x)
 - `dotnet-sonarscanner` global tool
 
 ```powershell
 dotnet tool install --global dotnet-sonarscanner
+pip install requests
 ```
 
 ---

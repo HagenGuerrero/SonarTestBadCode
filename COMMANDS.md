@@ -1,5 +1,8 @@
 # SonarQube Local Instance — Command Reference
 
+> **Version: SonarQube 9.9.x LTS**
+> Use `sonar.login` (not `sonar.token`) for scanner auth. Use `projectKeys` (not `componentKeys`) in REST API calls.
+
 ## Start the instance
 
 ```powershell
@@ -32,7 +35,7 @@ Copy the `token` value from the response — SonarQube will not show it again.
 ## Run a scan
 
 Run from the root of the project folder (where the `.sln` is).
-Use `sonar.login` — not `sonar.token` — for SonarQube 9.x.
+**9.9.x uses `sonar.login` — `sonar.token` is 10.x syntax and will fail here.**
 
 ```powershell
 dotnet sonarscanner begin /k:"YOUR-PROJECT-KEY" /d:sonar.host.url="http://localhost:9000" /d:sonar.login="YOUR-TOKEN"
@@ -40,11 +43,19 @@ dotnet build
 dotnet sonarscanner end /d:sonar.login="YOUR-TOKEN"
 ```
 
+To exclude the `scripts/` directory from analysis (avoids Python findings polluting the C# report):
+
+```powershell
+dotnet sonarscanner begin /k:"YOUR-PROJECT-KEY" /d:sonar.host.url="http://localhost:9000" /d:sonar.login="YOUR-TOKEN" /d:sonar.exclusions="scripts/**"
+```
+
 ---
 
 ## Get report as JSON
 
 ### All issues with type counts summary
+> Use `projectKeys` (not `componentKeys`) — `componentKeys` returns an incomplete subset on 9.9.x.
+
 ```powershell
 curl.exe -u "YOUR-TOKEN:" "http://localhost:9000/api/issues/search?projectKeys=YOUR-PROJECT-KEY&facets=types&ps=500" -o report_issues.json
 ```
