@@ -1,0 +1,1862 @@
+{
+  "total_files_with_issues": 7,
+  "total_batches": 7,
+  "total_issues": 233,
+  "skipped_not_found": 0,
+  "severity_distribution": {
+    "BLOCKER": 1,
+    "CRITICAL": 6
+  },
+  "batching_strategy": {
+    "tier1": "per-class (one file per batch)",
+    "tier2": "per-type (issues sorted by rule within each batch)",
+    "tier3": "numeric (batch_id 0..N ordered by descending severity)"
+  },
+  "batches": [
+    {
+      "batch_id": 0,
+      "component": "sonar-test-bad-code:SonarTestBadCode/ProcessorClass.cs",
+      "local_path": "SonarTestBadCode/ProcessorClass.cs",
+      "abs_path": "/home/runner/work/SonarTestBadCode/SonarTestBadCode/SonarTestBadCode/ProcessorClass.cs",
+      "file_exists": true,
+      "file_size_bytes": 3683,
+      "large_file": false,
+      "max_severity": "BLOCKER",
+      "issue_count": 26,
+      "rules_present": [
+        "csharpsquid:S1104",
+        "csharpsquid:S1116",
+        "csharpsquid:S112",
+        "csharpsquid:S1125",
+        "csharpsquid:S1144",
+        "csharpsquid:S1186",
+        "csharpsquid:S125",
+        "csharpsquid:S1481",
+        "csharpsquid:S1643",
+        "csharpsquid:S1854",
+        "csharpsquid:S2223",
+        "csharpsquid:S2306",
+        "csharpsquid:S2386",
+        "csharpsquid:S2589",
+        "csharpsquid:S3400"
+      ],
+      "issues": [
+        {
+          "line": 10,
+          "rule": "csharpsquid:S1104",
+          "severity": "MINOR",
+          "message": "Make this field 'private' and encapsulate it in a 'public' property.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 32,
+          "rule": "csharpsquid:S1116",
+          "severity": "MINOR",
+          "message": "Remove this empty statement.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 33,
+          "rule": "csharpsquid:S1116",
+          "severity": "MINOR",
+          "message": "Remove this empty statement.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 41,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 47,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 100,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 114,
+          "rule": "csharpsquid:S1125",
+          "severity": "MINOR",
+          "message": "Remove the unnecessary Boolean literal(s).",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 13,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_processorName'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 14,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_batchCount'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 17,
+          "rule": "csharpsquid:S1186",
+          "severity": "CRITICAL",
+          "message": "Add a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 18,
+          "rule": "csharpsquid:S1186",
+          "severity": "CRITICAL",
+          "message": "Add a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 104,
+          "rule": "csharpsquid:S125",
+          "severity": "MAJOR",
+          "message": "Remove this commented out code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 29,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedBatchLabel'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 30,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedOffset'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 31,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedState'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 55,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedHeader'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 113,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedCheck'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 58,
+          "rule": "csharpsquid:S1643",
+          "severity": "MINOR",
+          "message": "Use a StringBuilder instead.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 64,
+          "rule": "csharpsquid:S1643",
+          "severity": "MINOR",
+          "message": "Use a StringBuilder instead.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 33,
+          "rule": "csharpsquid:S1854",
+          "severity": "MAJOR",
+          "message": "Remove this useless assignment to local variable 'x'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 10,
+          "rule": "csharpsquid:S2223",
+          "severity": "CRITICAL",
+          "message": "Change the visibility of 'ProcessingLog' or make it 'const' or 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 39,
+          "rule": "csharpsquid:S2306",
+          "severity": "BLOCKER",
+          "message": "Rename 'async' to not use a contextual keyword as an identifier.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 10,
+          "rule": "csharpsquid:S2386",
+          "severity": "MINOR",
+          "message": "Use an immutable collection or reduce the accessibility of the public static field 'ProcessingLog'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 114,
+          "rule": "csharpsquid:S2589",
+          "severity": "MAJOR",
+          "message": "Change this condition so that it does not always evaluate to 'true'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 21,
+          "rule": "csharpsquid:S3400",
+          "severity": "MINOR",
+          "message": "Remove this method and declare a constant for this value.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 22,
+          "rule": "csharpsquid:S3400",
+          "severity": "MINOR",
+          "message": "Remove this method and declare a constant for this value.",
+          "type": "CODE_SMELL"
+        }
+      ]
+    },
+    {
+      "batch_id": 1,
+      "component": "sonar-test-bad-code:SonarTestBadCode/Repositories/UserRepository.cs",
+      "local_path": "SonarTestBadCode/Repositories/UserRepository.cs",
+      "abs_path": "/home/runner/work/SonarTestBadCode/SonarTestBadCode/SonarTestBadCode/Repositories/UserRepository.cs",
+      "file_exists": true,
+      "file_size_bytes": 6667,
+      "large_file": false,
+      "max_severity": "CRITICAL",
+      "issue_count": 43,
+      "rules_present": [
+        "csharpsquid:S1066",
+        "csharpsquid:S1104",
+        "csharpsquid:S1116",
+        "csharpsquid:S112",
+        "csharpsquid:S1125",
+        "csharpsquid:S1144",
+        "csharpsquid:S1186",
+        "csharpsquid:S125",
+        "csharpsquid:S1481",
+        "csharpsquid:S1643",
+        "csharpsquid:S1764",
+        "csharpsquid:S2223",
+        "csharpsquid:S2386",
+        "csharpsquid:S2589",
+        "csharpsquid:S2933",
+        "csharpsquid:S3400",
+        "csharpsquid:S3923"
+      ],
+      "issues": [
+        {
+          "line": 159,
+          "rule": "csharpsquid:S1066",
+          "severity": "MAJOR",
+          "message": "Merge this if statement with the enclosing one.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 10,
+          "rule": "csharpsquid:S1104",
+          "severity": "MINOR",
+          "message": "Make this field 'private' and encapsulate it in a 'public' property.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 11,
+          "rule": "csharpsquid:S1104",
+          "severity": "MINOR",
+          "message": "Make this field 'private' and encapsulate it in a 'public' property.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 12,
+          "rule": "csharpsquid:S1104",
+          "severity": "MINOR",
+          "message": "Make this field 'private' and encapsulate it in a 'public' property.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 185,
+          "rule": "csharpsquid:S1116",
+          "severity": "MINOR",
+          "message": "Remove this empty statement.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 30,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 40,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 127,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 132,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 159,
+          "rule": "csharpsquid:S1125",
+          "severity": "MINOR",
+          "message": "Remove the unnecessary Boolean literal(s).",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 15,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_tableName'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 16,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_maxBatchSize'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 17,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_auditEnabled'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 20,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_unusedConnectionLabel'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 21,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private method 'UnusedPrivateHelper'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 64,
+          "rule": "csharpsquid:S1186",
+          "severity": "CRITICAL",
+          "message": "Add a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 65,
+          "rule": "csharpsquid:S1186",
+          "severity": "CRITICAL",
+          "message": "Add a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 66,
+          "rule": "csharpsquid:S1186",
+          "severity": "CRITICAL",
+          "message": "Add a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 177,
+          "rule": "csharpsquid:S125",
+          "severity": "MAJOR",
+          "message": "Remove this commented out code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 28,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedCacheKey'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 29,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedCacheTtl'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 38,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedTemp'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 39,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedPage'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 74,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedAlias'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 75,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedColCount'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 88,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedParamPrefix'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 89,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedMeta'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 78,
+          "rule": "csharpsquid:S1643",
+          "severity": "MINOR",
+          "message": "Use a StringBuilder instead.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 92,
+          "rule": "csharpsquid:S1643",
+          "severity": "MINOR",
+          "message": "Use a StringBuilder instead.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 172,
+          "rule": "csharpsquid:S1764",
+          "severity": "MAJOR",
+          "message": "Correct one of the identical expressions on both sides of operator '=='.",
+          "type": "BUG"
+        },
+        {
+          "line": 10,
+          "rule": "csharpsquid:S2223",
+          "severity": "CRITICAL",
+          "message": "Change the visibility of 'EntityCache' or make it 'const' or 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 11,
+          "rule": "csharpsquid:S2223",
+          "severity": "CRITICAL",
+          "message": "Change the visibility of 'IdCache' or make it 'const' or 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 12,
+          "rule": "csharpsquid:S2223",
+          "severity": "CRITICAL",
+          "message": "Change the visibility of 'DeletedIds' or make it 'const' or 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 10,
+          "rule": "csharpsquid:S2386",
+          "severity": "MINOR",
+          "message": "Use an immutable collection or reduce the accessibility of the public static field 'EntityCache'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 11,
+          "rule": "csharpsquid:S2386",
+          "severity": "MINOR",
+          "message": "Use an immutable collection or reduce the accessibility of the public static field 'IdCache'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 12,
+          "rule": "csharpsquid:S2386",
+          "severity": "MINOR",
+          "message": "Use an immutable collection or reduce the accessibility of the public static field 'DeletedIds'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 159,
+          "rule": "csharpsquid:S2589",
+          "severity": "MAJOR",
+          "message": "Change this condition so that it does not always evaluate to 'true'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 173,
+          "rule": "csharpsquid:S2589",
+          "severity": "MAJOR",
+          "message": "Change this condition so that it does not always evaluate to 'true'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 20,
+          "rule": "csharpsquid:S2933",
+          "severity": "MAJOR",
+          "message": "Make '_unusedConnectionLabel' 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 150,
+          "rule": "csharpsquid:S3400",
+          "severity": "MINOR",
+          "message": "Remove this method and declare a constant for this value.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 151,
+          "rule": "csharpsquid:S3400",
+          "severity": "MINOR",
+          "message": "Remove this method and declare a constant for this value.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 190,
+          "rule": "csharpsquid:S3400",
+          "severity": "MINOR",
+          "message": "Remove this method and declare a constant for this value.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 139,
+          "rule": "csharpsquid:S3923",
+          "severity": "MAJOR",
+          "message": "Remove this conditional structure or edit its code blocks so that they're not all the same.",
+          "type": "BUG"
+        }
+      ]
+    },
+    {
+      "batch_id": 2,
+      "component": "sonar-test-bad-code:SonarTestBadCode/Controllers/HomeController.cs",
+      "local_path": "SonarTestBadCode/Controllers/HomeController.cs",
+      "abs_path": "/home/runner/work/SonarTestBadCode/SonarTestBadCode/SonarTestBadCode/Controllers/HomeController.cs",
+      "file_exists": true,
+      "file_size_bytes": 4834,
+      "large_file": false,
+      "max_severity": "CRITICAL",
+      "issue_count": 40,
+      "rules_present": [
+        "csharpsquid:S1066",
+        "csharpsquid:S1104",
+        "csharpsquid:S112",
+        "csharpsquid:S1125",
+        "csharpsquid:S1144",
+        "csharpsquid:S1186",
+        "csharpsquid:S125",
+        "csharpsquid:S1481",
+        "csharpsquid:S1764",
+        "csharpsquid:S2223",
+        "csharpsquid:S2386",
+        "csharpsquid:S2589",
+        "csharpsquid:S2933",
+        "csharpsquid:S3400",
+        "csharpsquid:S3923"
+      ],
+      "issues": [
+        {
+          "line": 79,
+          "rule": "csharpsquid:S1066",
+          "severity": "MAJOR",
+          "message": "Merge this if statement with the enclosing one.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 81,
+          "rule": "csharpsquid:S1066",
+          "severity": "MAJOR",
+          "message": "Merge this if statement with the enclosing one.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 11,
+          "rule": "csharpsquid:S1104",
+          "severity": "MINOR",
+          "message": "Make this field 'private' and encapsulate it in a 'public' property.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 12,
+          "rule": "csharpsquid:S1104",
+          "severity": "MINOR",
+          "message": "Make this field 'private' and encapsulate it in a 'public' property.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 13,
+          "rule": "csharpsquid:S1104",
+          "severity": "MINOR",
+          "message": "Make this field 'private' and encapsulate it in a 'public' property.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 33,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 110,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 111,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 53,
+          "rule": "csharpsquid:S1125",
+          "severity": "MINOR",
+          "message": "Remove the unnecessary Boolean literal(s).",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 16,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_apiEndpoint'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 17,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_timeout'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 18,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_debugMode'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 21,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_unusedField'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 22,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_unusedCounter'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 37,
+          "rule": "csharpsquid:S1186",
+          "severity": "CRITICAL",
+          "message": "Add a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 38,
+          "rule": "csharpsquid:S1186",
+          "severity": "CRITICAL",
+          "message": "Add a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 99,
+          "rule": "csharpsquid:S125",
+          "severity": "MAJOR",
+          "message": "Remove this commented out code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 29,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedVar1'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 30,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedVar2'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 31,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedTimestamp'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 50,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'sb'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 51,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'tempList'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 124,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'logPrefix'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 125,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'sequenceNum'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 93,
+          "rule": "csharpsquid:S1764",
+          "severity": "MAJOR",
+          "message": "Correct one of the identical expressions on both sides of operator '=='.",
+          "type": "BUG"
+        },
+        {
+          "line": 94,
+          "rule": "csharpsquid:S1764",
+          "severity": "MAJOR",
+          "message": "Correct one of the identical expressions on both sides of operator '=='.",
+          "type": "BUG"
+        },
+        {
+          "line": 11,
+          "rule": "csharpsquid:S2223",
+          "severity": "CRITICAL",
+          "message": "Change the visibility of 'CachedUsers' or make it 'const' or 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 12,
+          "rule": "csharpsquid:S2223",
+          "severity": "CRITICAL",
+          "message": "Change the visibility of 'UserCache' or make it 'const' or 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 13,
+          "rule": "csharpsquid:S2223",
+          "severity": "CRITICAL",
+          "message": "Change the visibility of 'PendingActions' or make it 'const' or 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 11,
+          "rule": "csharpsquid:S2386",
+          "severity": "MINOR",
+          "message": "Use an immutable collection or reduce the accessibility of the public static field 'CachedUsers'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 12,
+          "rule": "csharpsquid:S2386",
+          "severity": "MINOR",
+          "message": "Use an immutable collection or reduce the accessibility of the public static field 'UserCache'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 53,
+          "rule": "csharpsquid:S2589",
+          "severity": "MAJOR",
+          "message": "Change this condition so that it does not always evaluate to 'true'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 95,
+          "rule": "csharpsquid:S2589",
+          "severity": "MAJOR",
+          "message": "Change this condition so that it does not always evaluate to 'true'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 95,
+          "rule": "csharpsquid:S2589",
+          "severity": "MAJOR",
+          "message": "Change this condition so that it does not always evaluate to 'true'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 21,
+          "rule": "csharpsquid:S2933",
+          "severity": "MAJOR",
+          "message": "Make '_unusedField' 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 22,
+          "rule": "csharpsquid:S2933",
+          "severity": "MAJOR",
+          "message": "Make '_unusedCounter' 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 42,
+          "rule": "csharpsquid:S3400",
+          "severity": "MINOR",
+          "message": "Remove this method and declare a constant for this value.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 43,
+          "rule": "csharpsquid:S3400",
+          "severity": "MINOR",
+          "message": "Remove this method and declare a constant for this value.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 115,
+          "rule": "csharpsquid:S3400",
+          "severity": "MINOR",
+          "message": "Remove this method and declare a constant for this value.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 64,
+          "rule": "csharpsquid:S3923",
+          "severity": "MAJOR",
+          "message": "Remove this conditional structure or edit its code blocks so that they're not all the same.",
+          "type": "BUG"
+        }
+      ]
+    },
+    {
+      "batch_id": 3,
+      "component": "sonar-test-bad-code:SonarTestBadCode/Services/DataService.cs",
+      "local_path": "SonarTestBadCode/Services/DataService.cs",
+      "abs_path": "/home/runner/work/SonarTestBadCode/SonarTestBadCode/SonarTestBadCode/Services/DataService.cs",
+      "file_exists": true,
+      "file_size_bytes": 6440,
+      "large_file": false,
+      "max_severity": "CRITICAL",
+      "issue_count": 35,
+      "rules_present": [
+        "csharpsquid:S1066",
+        "csharpsquid:S1104",
+        "csharpsquid:S112",
+        "csharpsquid:S1144",
+        "csharpsquid:S1186",
+        "csharpsquid:S125",
+        "csharpsquid:S1481",
+        "csharpsquid:S1643",
+        "csharpsquid:S2223",
+        "csharpsquid:S2386",
+        "csharpsquid:S2583",
+        "csharpsquid:S2589",
+        "csharpsquid:S2696",
+        "csharpsquid:S2933",
+        "csharpsquid:S3400",
+        "csharpsquid:S3923",
+        "csharpsquid:S4487"
+      ],
+      "issues": [
+        {
+          "line": 178,
+          "rule": "csharpsquid:S1066",
+          "severity": "MAJOR",
+          "message": "Merge this if statement with the enclosing one.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 11,
+          "rule": "csharpsquid:S1104",
+          "severity": "MINOR",
+          "message": "Make this field 'private' and encapsulate it in a 'public' property.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 12,
+          "rule": "csharpsquid:S1104",
+          "severity": "MINOR",
+          "message": "Make this field 'private' and encapsulate it in a 'public' property.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 56,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 66,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 72,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 19,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_unusedServiceField'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 20,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_unusedInternalId'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 109,
+          "rule": "csharpsquid:S1186",
+          "severity": "CRITICAL",
+          "message": "Add a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 110,
+          "rule": "csharpsquid:S1186",
+          "severity": "CRITICAL",
+          "message": "Add a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 111,
+          "rule": "csharpsquid:S1186",
+          "severity": "CRITICAL",
+          "message": "Add a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 190,
+          "rule": "csharpsquid:S125",
+          "severity": "MAJOR",
+          "message": "Remove this commented out code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 28,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedIndex'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 41,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedLineCount'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 54,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedTemp1'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 55,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedKey'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 64,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedValidationResult'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 65,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedSaveFlag'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 119,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'tempKey'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 199,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedResult'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 31,
+          "rule": "csharpsquid:S1643",
+          "severity": "MINOR",
+          "message": "Use a StringBuilder instead.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 44,
+          "rule": "csharpsquid:S1643",
+          "severity": "MINOR",
+          "message": "Use a StringBuilder instead.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 11,
+          "rule": "csharpsquid:S2223",
+          "severity": "CRITICAL",
+          "message": "Change the visibility of 'DataCache' or make it 'const' or 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 12,
+          "rule": "csharpsquid:S2223",
+          "severity": "CRITICAL",
+          "message": "Change the visibility of 'ProcessingQueue' or make it 'const' or 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 11,
+          "rule": "csharpsquid:S2386",
+          "severity": "MINOR",
+          "message": "Use an immutable collection or reduce the accessibility of the public static field 'DataCache'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 147,
+          "rule": "csharpsquid:S2583",
+          "severity": "MAJOR",
+          "message": "Change this condition so that it does not always evaluate to 'false'; some subsequent code is never executed.",
+          "type": "BUG"
+        },
+        {
+          "line": 152,
+          "rule": "csharpsquid:S2589",
+          "severity": "MAJOR",
+          "message": "Change this condition so that it does not always evaluate to 'true'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 99,
+          "rule": "csharpsquid:S2696",
+          "severity": "CRITICAL",
+          "message": "Make the enclosing instance method 'static' or remove this set on the 'static' field.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 105,
+          "rule": "csharpsquid:S2696",
+          "severity": "CRITICAL",
+          "message": "Make the enclosing instance method 'static' or remove this set on the 'static' field.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 19,
+          "rule": "csharpsquid:S2933",
+          "severity": "MAJOR",
+          "message": "Make '_unusedServiceField' 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 20,
+          "rule": "csharpsquid:S2933",
+          "severity": "MAJOR",
+          "message": "Make '_unusedInternalId' 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 187,
+          "rule": "csharpsquid:S3400",
+          "severity": "MINOR",
+          "message": "Remove this method and declare a constant for this value.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 163,
+          "rule": "csharpsquid:S3923",
+          "severity": "MAJOR",
+          "message": "Remove this conditional structure or edit its code blocks so that they're not all the same.",
+          "type": "BUG"
+        },
+        {
+          "line": 15,
+          "rule": "csharpsquid:S4487",
+          "severity": "CRITICAL",
+          "message": "Remove this unread private field '_connectionString' or refactor the code to use its value.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 16,
+          "rule": "csharpsquid:S4487",
+          "severity": "CRITICAL",
+          "message": "Remove this unread private field '_retryCount' or refactor the code to use its value.",
+          "type": "CODE_SMELL"
+        }
+      ]
+    },
+    {
+      "batch_id": 4,
+      "component": "sonar-test-bad-code:SonarTestBadCode/Helpers/ValidationHelper.cs",
+      "local_path": "SonarTestBadCode/Helpers/ValidationHelper.cs",
+      "abs_path": "/home/runner/work/SonarTestBadCode/SonarTestBadCode/SonarTestBadCode/Helpers/ValidationHelper.cs",
+      "file_exists": true,
+      "file_size_bytes": 5647,
+      "large_file": false,
+      "max_severity": "CRITICAL",
+      "issue_count": 31,
+      "rules_present": [
+        "csharpsquid:S1066",
+        "csharpsquid:S1104",
+        "csharpsquid:S1116",
+        "csharpsquid:S112",
+        "csharpsquid:S1125",
+        "csharpsquid:S1144",
+        "csharpsquid:S1186",
+        "csharpsquid:S125",
+        "csharpsquid:S1481",
+        "csharpsquid:S1764",
+        "csharpsquid:S2223",
+        "csharpsquid:S2386",
+        "csharpsquid:S2589",
+        "csharpsquid:S2933",
+        "csharpsquid:S3400",
+        "csharpsquid:S3923"
+      ],
+      "issues": [
+        {
+          "line": 28,
+          "rule": "csharpsquid:S1066",
+          "severity": "MAJOR",
+          "message": "Merge this if statement with the enclosing one.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 42,
+          "rule": "csharpsquid:S1066",
+          "severity": "MAJOR",
+          "message": "Merge this if statement with the enclosing one.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 57,
+          "rule": "csharpsquid:S1066",
+          "severity": "MAJOR",
+          "message": "Merge this if statement with the enclosing one.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 11,
+          "rule": "csharpsquid:S1104",
+          "severity": "MINOR",
+          "message": "Make this field 'private' and encapsulate it in a 'public' property.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 162,
+          "rule": "csharpsquid:S1116",
+          "severity": "MINOR",
+          "message": "Remove this empty statement.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 117,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 119,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 120,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 127,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 86,
+          "rule": "csharpsquid:S1125",
+          "severity": "MINOR",
+          "message": "Remove the unnecessary Boolean literal(s).",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 14,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_lastError'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 15,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_validationCount'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 18,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_unusedHelperField'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 153,
+          "rule": "csharpsquid:S1186",
+          "severity": "CRITICAL",
+          "message": "Add a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 154,
+          "rule": "csharpsquid:S1186",
+          "severity": "CRITICAL",
+          "message": "Add a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 131,
+          "rule": "csharpsquid:S125",
+          "severity": "MAJOR",
+          "message": "Remove this commented out code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 25,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedNormalized'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 54,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedRange'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 85,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedContext'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 140,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedMatchResult'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 141,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedMatchCount'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 106,
+          "rule": "csharpsquid:S1764",
+          "severity": "MAJOR",
+          "message": "Correct one of the identical expressions on both sides of operator '>'.",
+          "type": "BUG"
+        },
+        {
+          "line": 107,
+          "rule": "csharpsquid:S1764",
+          "severity": "MAJOR",
+          "message": "Correct one of the identical expressions on both sides of operator '<'.",
+          "type": "BUG"
+        },
+        {
+          "line": 108,
+          "rule": "csharpsquid:S1764",
+          "severity": "MAJOR",
+          "message": "Correct one of the identical expressions on both sides of operator '=='.",
+          "type": "BUG"
+        },
+        {
+          "line": 11,
+          "rule": "csharpsquid:S2223",
+          "severity": "CRITICAL",
+          "message": "Change the visibility of 'ValidationRules' or make it 'const' or 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 11,
+          "rule": "csharpsquid:S2386",
+          "severity": "MINOR",
+          "message": "Use an immutable collection or reduce the accessibility of the public static field 'ValidationRules'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 86,
+          "rule": "csharpsquid:S2589",
+          "severity": "MAJOR",
+          "message": "Change this condition so that it does not always evaluate to 'true'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 109,
+          "rule": "csharpsquid:S2589",
+          "severity": "MAJOR",
+          "message": "Change this condition so that it does not always evaluate to 'true'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 18,
+          "rule": "csharpsquid:S2933",
+          "severity": "MAJOR",
+          "message": "Make '_unusedHelperField' 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 157,
+          "rule": "csharpsquid:S3400",
+          "severity": "MINOR",
+          "message": "Remove this method and declare a constant for this value.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 88,
+          "rule": "csharpsquid:S3923",
+          "severity": "MAJOR",
+          "message": "Remove this conditional structure or edit its code blocks so that they're not all the same.",
+          "type": "BUG"
+        }
+      ]
+    },
+    {
+      "batch_id": 5,
+      "component": "sonar-test-bad-code:SonarTestBadCode/Models/UserModel.cs",
+      "local_path": "SonarTestBadCode/Models/UserModel.cs",
+      "abs_path": "/home/runner/work/SonarTestBadCode/SonarTestBadCode/SonarTestBadCode/Models/UserModel.cs",
+      "file_exists": true,
+      "file_size_bytes": 5070,
+      "large_file": false,
+      "max_severity": "CRITICAL",
+      "issue_count": 29,
+      "rules_present": [
+        "csharpsquid:S1066",
+        "csharpsquid:S1104",
+        "csharpsquid:S1116",
+        "csharpsquid:S112",
+        "csharpsquid:S1144",
+        "csharpsquid:S1186",
+        "csharpsquid:S125",
+        "csharpsquid:S1481",
+        "csharpsquid:S1643",
+        "csharpsquid:S1764",
+        "csharpsquid:S2223",
+        "csharpsquid:S2386",
+        "csharpsquid:S2933",
+        "csharpsquid:S3400",
+        "csharpsquid:S3923"
+      ],
+      "issues": [
+        {
+          "line": 87,
+          "rule": "csharpsquid:S1066",
+          "severity": "MAJOR",
+          "message": "Merge this if statement with the enclosing one.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 89,
+          "rule": "csharpsquid:S1066",
+          "severity": "MAJOR",
+          "message": "Merge this if statement with the enclosing one.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 11,
+          "rule": "csharpsquid:S1104",
+          "severity": "MINOR",
+          "message": "Make this field 'private' and encapsulate it in a 'public' property.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 12,
+          "rule": "csharpsquid:S1104",
+          "severity": "MINOR",
+          "message": "Make this field 'private' and encapsulate it in a 'public' property.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 147,
+          "rule": "csharpsquid:S1116",
+          "severity": "MINOR",
+          "message": "Remove this empty statement.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 148,
+          "rule": "csharpsquid:S1116",
+          "severity": "MINOR",
+          "message": "Remove this empty statement.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 38,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 45,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 15,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_defaultRole'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 16,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_defaultAge'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 17,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_defaultActive'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 20,
+          "rule": "csharpsquid:S1144",
+          "severity": "MAJOR",
+          "message": "Remove the unused private field '_unusedInternalNote'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 27,
+          "rule": "csharpsquid:S1186",
+          "severity": "CRITICAL",
+          "message": "Add a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 28,
+          "rule": "csharpsquid:S1186",
+          "severity": "CRITICAL",
+          "message": "Add a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 110,
+          "rule": "csharpsquid:S125",
+          "severity": "MAJOR",
+          "message": "Remove this commented out code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 36,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedHash'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 37,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedAttempts'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 119,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedKey'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 120,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedRevision'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 139,
+          "rule": "csharpsquid:S1643",
+          "severity": "MINOR",
+          "message": "Use a StringBuilder instead.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 103,
+          "rule": "csharpsquid:S1764",
+          "severity": "MAJOR",
+          "message": "Correct one of the identical expressions on both sides of operator '>'.",
+          "type": "BUG"
+        },
+        {
+          "line": 104,
+          "rule": "csharpsquid:S1764",
+          "severity": "MAJOR",
+          "message": "Correct one of the identical expressions on both sides of operator '=='.",
+          "type": "BUG"
+        },
+        {
+          "line": 11,
+          "rule": "csharpsquid:S2223",
+          "severity": "CRITICAL",
+          "message": "Change the visibility of 'AllUsers' or make it 'const' or 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 12,
+          "rule": "csharpsquid:S2223",
+          "severity": "CRITICAL",
+          "message": "Change the visibility of 'BlacklistedEmails' or make it 'const' or 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 11,
+          "rule": "csharpsquid:S2386",
+          "severity": "MINOR",
+          "message": "Use an immutable collection or reduce the accessibility of the public static field 'AllUsers'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 12,
+          "rule": "csharpsquid:S2386",
+          "severity": "MINOR",
+          "message": "Use an immutable collection or reduce the accessibility of the public static field 'BlacklistedEmails'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 20,
+          "rule": "csharpsquid:S2933",
+          "severity": "MAJOR",
+          "message": "Make '_unusedInternalNote' 'readonly'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 77,
+          "rule": "csharpsquid:S3400",
+          "severity": "MINOR",
+          "message": "Remove this method and declare a constant for this value.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 66,
+          "rule": "csharpsquid:S3923",
+          "severity": "MAJOR",
+          "message": "Remove this conditional structure or edit its code blocks so that they're not all the same.",
+          "type": "BUG"
+        }
+      ]
+    },
+    {
+      "batch_id": 6,
+      "component": "sonar-test-bad-code:SonarTestBadCode/Utilities/StringHelper.cs",
+      "local_path": "SonarTestBadCode/Utilities/StringHelper.cs",
+      "abs_path": "/home/runner/work/SonarTestBadCode/SonarTestBadCode/SonarTestBadCode/Utilities/StringHelper.cs",
+      "file_exists": true,
+      "file_size_bytes": 5772,
+      "large_file": false,
+      "max_severity": "CRITICAL",
+      "issue_count": 29,
+      "rules_present": [
+        "csharpsquid:S1066",
+        "csharpsquid:S1116",
+        "csharpsquid:S1118",
+        "csharpsquid:S112",
+        "csharpsquid:S1125",
+        "csharpsquid:S1186",
+        "csharpsquid:S125",
+        "csharpsquid:S1481",
+        "csharpsquid:S1643",
+        "csharpsquid:S1764",
+        "csharpsquid:S2583",
+        "csharpsquid:S2589",
+        "csharpsquid:S3400",
+        "csharpsquid:S3923"
+      ],
+      "issues": [
+        {
+          "line": 151,
+          "rule": "csharpsquid:S1066",
+          "severity": "MAJOR",
+          "message": "Merge this if statement with the enclosing one.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 176,
+          "rule": "csharpsquid:S1116",
+          "severity": "MINOR",
+          "message": "Remove this empty statement.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 11,
+          "rule": "csharpsquid:S1118",
+          "severity": "MAJOR",
+          "message": "Hide this public constructor by making it 'protected'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 117,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 130,
+          "rule": "csharpsquid:S112",
+          "severity": "MAJOR",
+          "message": "'System.Exception' should not be thrown by user code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 70,
+          "rule": "csharpsquid:S1125",
+          "severity": "MINOR",
+          "message": "Remove the unnecessary Boolean literal(s).",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 80,
+          "rule": "csharpsquid:S1125",
+          "severity": "MINOR",
+          "message": "Remove the unnecessary Boolean literal(s).",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 100,
+          "rule": "csharpsquid:S1186",
+          "severity": "CRITICAL",
+          "message": "Add a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 101,
+          "rule": "csharpsquid:S1186",
+          "severity": "CRITICAL",
+          "message": "Add a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 168,
+          "rule": "csharpsquid:S125",
+          "severity": "MAJOR",
+          "message": "Remove this commented out code.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 19,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedMaxLength'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 33,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedSeparator'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 34,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedPartCount'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 67,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedFlag1'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 68,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedFlag2'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 93,
+          "rule": "csharpsquid:S1481",
+          "severity": "MINOR",
+          "message": "Remove the unused local variable 'unusedDebugInfo'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 22,
+          "rule": "csharpsquid:S1643",
+          "severity": "MINOR",
+          "message": "Use a StringBuilder instead.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 38,
+          "rule": "csharpsquid:S1643",
+          "severity": "MINOR",
+          "message": "Use a StringBuilder instead.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 51,
+          "rule": "csharpsquid:S1643",
+          "severity": "MINOR",
+          "message": "Use a StringBuilder instead.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 162,
+          "rule": "csharpsquid:S1764",
+          "severity": "MAJOR",
+          "message": "Correct one of the identical expressions on both sides of operator '=='.",
+          "type": "BUG"
+        },
+        {
+          "line": 163,
+          "rule": "csharpsquid:S1764",
+          "severity": "MAJOR",
+          "message": "Correct one of the identical expressions on both sides of operator '=='.",
+          "type": "BUG"
+        },
+        {
+          "line": 164,
+          "rule": "csharpsquid:S2583",
+          "severity": "MAJOR",
+          "message": "Change this condition so that it does not always evaluate to 'true'; some subsequent code is never executed.",
+          "type": "BUG"
+        },
+        {
+          "line": 70,
+          "rule": "csharpsquid:S2589",
+          "severity": "MAJOR",
+          "message": "Change this condition so that it does not always evaluate to 'true'.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 57,
+          "rule": "csharpsquid:S3400",
+          "severity": "MINOR",
+          "message": "Remove this method and declare a constant for this value.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 58,
+          "rule": "csharpsquid:S3400",
+          "severity": "MINOR",
+          "message": "Remove this method and declare a constant for this value.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 59,
+          "rule": "csharpsquid:S3400",
+          "severity": "MINOR",
+          "message": "Remove this method and declare a constant for this value.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 60,
+          "rule": "csharpsquid:S3400",
+          "severity": "MINOR",
+          "message": "Remove this method and declare a constant for this value.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 122,
+          "rule": "csharpsquid:S3400",
+          "severity": "MINOR",
+          "message": "Remove this method and declare a constant for this value.",
+          "type": "CODE_SMELL"
+        },
+        {
+          "line": 136,
+          "rule": "csharpsquid:S3923",
+          "severity": "MAJOR",
+          "message": "Remove this conditional structure or edit its code blocks so that they're not all the same.",
+          "type": "BUG"
+        }
+      ]
+    }
+  ]
+}

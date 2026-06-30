@@ -121,19 +121,21 @@ jobs:
 
       - name: Import quality profile
         run: |
+          # "Sonar way" is a built-in read-only profile — restore rejects that name.
+          # Rename it to a custom name in the XML before uploading.
+          sed 's|<name>Sonar way</name>|<name>CI-Profile-cs</name>|' \
+            sonar/quality-profile-cs.xml > /tmp/ci-profile-cs.xml
+
           PROFILE_RESP=$(curl -sf -X POST -u "admin:admin" \
             "http://localhost:9000/api/qualityprofiles/restore" \
-            -F "backup=@sonar/quality-profile-cs.xml")
-
-          PROFILE_NAME=$(echo "$PROFILE_RESP" | python3 -c \
-            "import json,sys; print(json.load(sys.stdin)['profile']['name'])")
+            -F "backup=@/tmp/ci-profile-cs.xml")
 
           curl -sf -X POST -u "admin:admin" \
             "http://localhost:9000/api/qualityprofiles/set_default" \
             --data-urlencode "language=cs" \
-            --data-urlencode "qualityProfile=$PROFILE_NAME"
+            --data-urlencode "qualityProfile=CI-Profile-cs"
 
-          echo "Quality profile '$PROFILE_NAME' imported and set as default for C#"
+          echo "Quality profile 'CI-Profile-cs' imported and set as default for C#"
 
       # -----------------------------------------------------------------------
       # SonarQube scan
