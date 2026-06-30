@@ -119,6 +119,22 @@ jobs:
           echo "SONARQUBE_TOKEN=$TOKEN" >> "$GITHUB_ENV"
           echo "Bootstrap complete — token and project ready"
 
+      - name: Import quality profile
+        run: |
+          PROFILE_RESP=$(curl -sf -X POST -u "admin:admin" \
+            "http://localhost:9000/api/qualityprofiles/restore" \
+            -F "backup=@sonar/quality-profile-cs.xml")
+
+          PROFILE_NAME=$(echo "$PROFILE_RESP" | python3 -c \
+            "import json,sys; print(json.load(sys.stdin)['profile']['name'])")
+
+          curl -sf -X POST -u "admin:admin" \
+            "http://localhost:9000/api/qualityprofiles/set_default" \
+            --data-urlencode "language=cs" \
+            --data-urlencode "qualityProfile=$PROFILE_NAME"
+
+          echo "Quality profile '$PROFILE_NAME' imported and set as default for C#"
+
       # -----------------------------------------------------------------------
       # SonarQube scan
       # -----------------------------------------------------------------------
