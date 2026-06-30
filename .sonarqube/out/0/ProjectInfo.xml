@@ -4,15 +4,15 @@
   <ProjectLanguage>C#</ProjectLanguage>
   <ProjectType>Product</ProjectType>
   <ProjectGuid>8f2a1b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c</ProjectGuid>
-  <FullPath>C:\repos\sonartestbadcode\SonarTestBadCode\SonarTestBadCode.csproj</FullPath>
+  <FullPath>C:\repos\SonarTestBadCode\SonarTestBadCode\SonarTestBadCode.csproj</FullPath>
   <IsExcluded>false</IsExcluded>
   <AnalysisResultFiles>
-    <AnalysisResultFile Id="FilesToAnalyze" Location="C:\repos\sonartestbadcode\.sonarqube\conf\0\FilesToAnalyze.txt" />
+    <AnalysisResultFile Id="FilesToAnalyze" Location="C:\repos\SonarTestBadCode\.sonarqube\conf\0\FilesToAnalyze.txt" />
   </AnalysisResultFiles>
   <AnalysisSettings>
-    <Property Name="sonar.cs.roslyn.reportFilePaths">C:\repos\sonartestbadcode\.sonarqube\out\0\Issues.json</Property>
-    <Property Name="sonar.cs.analyzer.projectOutPaths">C:\repos\sonartestbadcode\.sonarqube\out\0</Property>
-    <Property Name="sonar.cs.scanner.telemetry">C:\repos\sonartestbadcode\.sonarqube\out\0\Telemetry.json</Property>
+    <Property Name="sonar.cs.roslyn.reportFilePaths">C:\repos\SonarTestBadCode\.sonarqube\out\0\Issues.json</Property>
+    <Property Name="sonar.cs.analyzer.projectOutPaths">C:\repos\SonarTestBadCode\.sonarqube\out\0</Property>
+    <Property Name="sonar.cs.scanner.telemetry">C:\repos\SonarTestBadCode\.sonarqube\out\0\Telemetry.json</Property>
   </AnalysisSettings>
   <Configuration>Debug</Configuration>
   <Platform>AnyCPU</Platform>

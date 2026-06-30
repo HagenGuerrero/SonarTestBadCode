@@ -10,27 +10,27 @@
     },
     {
       "key": "sonar.scanner.bootstrapStartTime",
-      "value": "1782744219000"
+      "value": "1782836200000"
     },
     {
       "key": "sonar.projectKey",
-      "value": "sonar-test-bad-code"
+      "value": "AUTOMATION-TEST"
     },
     {
       "key": "sonar.working.directory",
-      "value": "C:\\repos\\sonartestbadcode\\.sonarqube\\out\\.sonar"
+      "value": "C:\\repos\\SonarTestBadCode\\.sonarqube\\out\\.sonar"
     },
     {
       "key": "sonar.projectBaseDir",
-      "value": "C:\\repos\\sonartestbadcode"
+      "value": "C:\\repos\\SonarTestBadCode"
     },
     {
       "key": "sonar.pullrequest.cache.basepath",
-      "value": "C:\\repos\\sonartestbadcode"
+      "value": "C:\\repos\\SonarTestBadCode"
     },
     {
       "key": "sonar.sources",
-      "value": "C:\\repos\\sonartestbadcode\\.vscode\\settings.json,C:\\repos\\sonartestbadcode\\output\\batches.json,C:\\repos\\sonartestbadcode\\output\\issues.json,C:\\repos\\sonartestbadcode\\scripts\\shared\\constants.py,C:\\repos\\sonartestbadcode\\scripts\\shared\\__init__.py,C:\\repos\\sonartestbadcode\\scripts\\sonar\\batch_issues.py,C:\\repos\\sonartestbadcode\\scripts\\sonar\\fetch_issues.py,C:\\repos\\sonartestbadcode\\scripts\\sonar\\__init__.py,C:\\repos\\sonartestbadcode\\report_issues.json"
+      "value": "C:\\repos\\SonarTestBadCode\\.vscode\\settings.json,C:\\repos\\SonarTestBadCode\\.github\\workflows\\sonar-batch.yml,C:\\repos\\SonarTestBadCode\\scripts\\shared\\constants.py,C:\\repos\\SonarTestBadCode\\scripts\\shared\\__init__.py,C:\\repos\\SonarTestBadCode\\scripts\\sonar\\batch_issues.py,C:\\repos\\SonarTestBadCode\\scripts\\sonar\\fetch_issues.py,C:\\repos\\SonarTestBadCode\\scripts\\sonar\\__init__.py"
     },
     {
       "key": "sonar.tests",
@@ -42,7 +42,7 @@
     },
     {
       "key": "8F2A1B3C-4D5E-6F7A-8B9C-0D1E2F3A4B5C.sonar.projectKey",
-      "value": "sonar-test-bad-code:8F2A1B3C-4D5E-6F7A-8B9C-0D1E2F3A4B5C"
+      "value": "AUTOMATION-TEST:8F2A1B3C-4D5E-6F7A-8B9C-0D1E2F3A4B5C"
     },
     {
       "key": "8F2A1B3C-4D5E-6F7A-8B9C-0D1E2F3A4B5C.sonar.projectName",
@@ -50,11 +50,11 @@
     },
     {
       "key": "8F2A1B3C-4D5E-6F7A-8B9C-0D1E2F3A4B5C.sonar.projectBaseDir",
-      "value": "C:\\repos\\sonartestbadcode\\SonarTestBadCode"
+      "value": "C:\\repos\\SonarTestBadCode\\SonarTestBadCode"
     },
     {
       "key": "8F2A1B3C-4D5E-6F7A-8B9C-0D1E2F3A4B5C.sonar.working.directory",
-      "value": "C:\\repos\\sonartestbadcode\\.sonarqube\\out\\.sonar\\mod0"
+      "value": "C:\\repos\\SonarTestBadCode\\.sonarqube\\out\\.sonar\\mod0"
     },
     {
       "key": "8F2A1B3C-4D5E-6F7A-8B9C-0D1E2F3A4B5C.sonar.sourceEncoding",
@@ -66,19 +66,19 @@
     },
     {
       "key": "8F2A1B3C-4D5E-6F7A-8B9C-0D1E2F3A4B5C.sonar.sources",
-      "value": "C:\\repos\\sonartestbadcode\\SonarTestBadCode\\Controllers\\HomeController.cs,C:\\repos\\sonartestbadcode\\SonarTestBadCode\\Helpers\\ValidationHelper.cs,C:\\repos\\sonartestbadcode\\SonarTestBadCode\\Models\\UserModel.cs,C:\\repos\\sonartestbadcode\\SonarTestBadCode\\ProcessorClass.cs,C:\\repos\\sonartestbadcode\\SonarTestBadCode\\Properties\\AssemblyInfo.cs,C:\\repos\\sonartestbadcode\\SonarTestBadCode\\Repositories\\UserRepository.cs,C:\\repos\\sonartestbadcode\\SonarTestBadCode\\Services\\DataService.cs,C:\\repos\\sonartestbadcode\\SonarTestBadCode\\Utilities\\StringHelper.cs"
+      "value": "C:\\repos\\SonarTestBadCode\\SonarTestBadCode\\Controllers\\HomeController.cs,C:\\repos\\SonarTestBadCode\\SonarTestBadCode\\Helpers\\ValidationHelper.cs,C:\\repos\\SonarTestBadCode\\SonarTestBadCode\\Models\\UserModel.cs,C:\\repos\\SonarTestBadCode\\SonarTestBadCode\\ProcessorClass.cs,C:\\repos\\SonarTestBadCode\\SonarTestBadCode\\Properties\\AssemblyInfo.cs,C:\\repos\\SonarTestBadCode\\SonarTestBadCode\\Repositories\\UserRepository.cs,C:\\repos\\SonarTestBadCode\\SonarTestBadCode\\Services\\DataService.cs,C:\\repos\\SonarTestBadCode\\SonarTestBadCode\\Utilities\\StringHelper.cs"
     },
     {
       "key": "8F2A1B3C-4D5E-6F7A-8B9C-0D1E2F3A4B5C.sonar.cs.analyzer.projectOutPaths",
-      "value": "C:\\repos\\sonartestbadcode\\.sonarqube\\out\\0"
+      "value": "C:\\repos\\SonarTestBadCode\\.sonarqube\\out\\0"
     },
     {
       "key": "8F2A1B3C-4D5E-6F7A-8B9C-0D1E2F3A4B5C.sonar.cs.roslyn.reportFilePaths",
-      "value": "C:\\repos\\sonartestbadcode\\.sonarqube\\out\\0\\Issues.json"
+      "value": "C:\\repos\\SonarTestBadCode\\.sonarqube\\out\\0\\Issues.json"
     },
     {
       "key": "8F2A1B3C-4D5E-6F7A-8B9C-0D1E2F3A4B5C.sonar.cs.scanner.telemetry",
-      "value": "C:\\repos\\sonartestbadcode\\.sonarqube\\out\\0\\Telemetry.json"
+      "value": "C:\\repos\\SonarTestBadCode\\.sonarqube\\out\\0\\Telemetry.json"
     },
     {
       "key": "sonar.login",

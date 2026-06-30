@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AnalysisConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.sonarsource.com/msbuild/integration/2015/1">
-  <SonarConfigDir>C:\repos\sonartestbadcode\.sonarqube\conf</SonarConfigDir>
-  <SonarOutputDir>C:\repos\sonartestbadcode\.sonarqube\out</SonarOutputDir>
-  <SonarBinDir>C:\repos\sonartestbadcode\.sonarqube\bin</SonarBinDir>
-  <SonarScannerWorkingDirectory>C:\repos\sonartestbadcode</SonarScannerWorkingDirectory>
+  <SonarConfigDir>C:\repos\SonarTestBadCode\.sonarqube\conf</SonarConfigDir>
+  <SonarOutputDir>C:\repos\SonarTestBadCode\.sonarqube\out</SonarOutputDir>
+  <SonarBinDir>C:\repos\SonarTestBadCode\.sonarqube\bin</SonarBinDir>
+  <SonarScannerWorkingDirectory>C:\repos\SonarTestBadCode</SonarScannerWorkingDirectory>
   <SonarScannerCliPath>C:\Users\HagenGuerreroHernand\.sonar\cache\2f10fe6ac36213958201a67383c712a587e3843e32ae1edf06f01062d6fd1407\sonar-scanner-cli-5.0.2.4997.zip_extracted\sonar-scanner-5.0.2.4997\bin\sonar-scanner</SonarScannerCliPath>
   <UseSonarScannerCli>false</UseSonarScannerCli>
   <ScanAllAnalysis>true</ScanAllAnalysis>
@@ -11,13 +11,13 @@
   <HasBeginStepCommandLineTruststorePassword>false</HasBeginStepCommandLineTruststorePassword>
   <SonarQubeHostUrl>http://localhost:9000</SonarQubeHostUrl>
   <SonarQubeVersion>9.9.8.100196</SonarQubeVersion>
-  <SonarProjectKey>sonar-test-bad-code</SonarProjectKey>
+  <SonarProjectKey>AUTOMATION-TEST</SonarProjectKey>
   <AdditionalConfig>
     <ConfigSetting Id="BuildUri" />
     <ConfigSetting Id="TfsUri" />
     <ConfigSetting Id="VsCoverageConverterToolPath" />
     <ConfigSetting Id="UnchangedFilesPath" />
-    <ConfigSetting Id="sonar.pullrequest.cache.basepath" Value="C:\repos\sonartestbadcode" />
+    <ConfigSetting Id="sonar.pullrequest.cache.basepath" Value="C:\repos\SonarTestBadCode" />
     <ConfigSetting Id="settings.file.path" Value="C:\Users\HagenGuerreroHernand\.dotnet\tools\.store\dotnet-sonarscanner\11.2.1\dotnet-sonarscanner\11.2.1\tools\netcoreapp3.1\any\SonarQube.Analysis.xml" />
   </AdditionalConfig>
   <ServerSettings>
@@ -130,8 +130,8 @@
   <AnalyzersSettings>
     <AnalyzerSettings>
       <Language>cs</Language>
-      <RulesetPath>C:\repos\sonartestbadcode\.sonarqube\conf\Sonar-cs.ruleset</RulesetPath>
-      <DeactivatedRulesetPath>C:\repos\sonartestbadcode\.sonarqube\conf\Sonar-cs-none.ruleset</DeactivatedRulesetPath>
+      <RulesetPath>C:\repos\SonarTestBadCode\.sonarqube\conf\Sonar-cs.ruleset</RulesetPath>
+      <DeactivatedRulesetPath>C:\repos\SonarTestBadCode\.sonarqube\conf\Sonar-cs-none.ruleset</DeactivatedRulesetPath>
       <AnalyzerPlugins>
         <AnalyzerPlugin Key="csharp" Version="8.51.0.59060" StaticResourceName="SonarAnalyzer-8.51.0.59060.zip">
           <AssemblyPaths>
@@ -144,13 +144,13 @@
         </AnalyzerPlugin>
       </AnalyzerPlugins>
       <AdditionalFilePaths>
-        <Path>C:\repos\sonartestbadcode\.sonarqube\conf\cs\SonarLint.xml</Path>
+        <Path>C:\repos\SonarTestBadCode\.sonarqube\conf\cs\SonarLint.xml</Path>
       </AdditionalFilePaths>
     </AnalyzerSettings>
     <AnalyzerSettings>
       <Language>vbnet</Language>
-      <RulesetPath>C:\repos\sonartestbadcode\.sonarqube\conf\Sonar-vbnet.ruleset</RulesetPath>
-      <DeactivatedRulesetPath>C:\repos\sonartestbadcode\.sonarqube\conf\Sonar-vbnet-none.ruleset</DeactivatedRulesetPath>
+      <RulesetPath>C:\repos\SonarTestBadCode\.sonarqube\conf\Sonar-vbnet.ruleset</RulesetPath>
+      <DeactivatedRulesetPath>C:\repos\SonarTestBadCode\.sonarqube\conf\Sonar-vbnet-none.ruleset</DeactivatedRulesetPath>
       <AnalyzerPlugins>
         <AnalyzerPlugin Key="vbnet" Version="8.51.0.59060" StaticResourceName="SonarAnalyzer-8.51.0.59060.zip">
           <AssemblyPaths>
@@ -163,7 +163,7 @@
         </AnalyzerPlugin>
       </AnalyzerPlugins>
       <AdditionalFilePaths>
-        <Path>C:\repos\sonartestbadcode\.sonarqube\conf\vbnet\SonarLint.xml</Path>
+        <Path>C:\repos\SonarTestBadCode\.sonarqube\conf\vbnet\SonarLint.xml</Path>
       </AdditionalFilePaths>
     </AnalyzerSettings>
   </AnalyzersSettings>
