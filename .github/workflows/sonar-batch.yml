@@ -1,0 +1,272 @@
+name: SonarQube — Fetch & Batch Issues
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_keys:
+        description: 'SonarQube project keys (comma-separated)'
+        required: false
+        default: 'sonar-test-bad-code'
+      severities:
+        description: 'Severities to fetch (comma-separated)'
+        required: false
+        default: 'BLOCKER,CRITICAL,MAJOR,MINOR,INFO'
+      language_filter:
+        description: 'SonarQube language key'
+        required: false
+        default: 'cs'
+      max_files:
+        description: 'Max files to batch (0 = unlimited)'
+        required: false
+        default: '0'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sonar-batch:
+    # Only run when dispatched from the agent/batching branch.
+    if: github.ref == 'refs/heads/agent/batching'
+    # ubuntu-latest: required for SonarQube service container (Linux image).
+    # .NET Framework 4.8 is built via Mono MSBuild installed from the official
+    # Mono Project repository (Ubuntu apt does not ship mono-msbuild).
+    # GitHub-hosted Windows runners use Docker CE (not Desktop) and cannot run
+    # Linux containers, so the runner must stay on Ubuntu.
+    runs-on: ubuntu-latest
+
+    services:
+      sonarqube:
+        image: sonarqube:lts-community
+        ports:
+          - 9000:9000
+        # No health-cmd — the JRE base image has no curl/wget.
+        # Readiness is polled from the runner in the wait step below.
+
+    steps:
+      # -----------------------------------------------------------------------
+      # Toolchain setup
+      # -----------------------------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Java 17 (required by SonarScanner backend)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Install dotnet-sonarscanner
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Install Python dependencies
+        run: pip install requests
+
+      - name: Install Mono MSBuild (official Mono Project repo — Ubuntu apt lacks mono-msbuild)
+        run: |
+          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 \
+            --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+          echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" \
+            | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+          sudo apt-get update -qq
+          sudo apt-get install -y mono-devel
+
+      # -----------------------------------------------------------------------
+      # Bootstrap — wait for SonarQube, generate token, create project
+      # SonarQube 9.9.x LTS: admin:admin works on a fresh ephemeral instance.
+      # Use sonar.login (not sonar.token) — sonar.token is 10.x syntax.
+      # Use projectKeys (not componentKeys) in REST API — returns full result set.
+      # -----------------------------------------------------------------------
+      - name: Wait for SonarQube to be fully UP
+        run: |
+          echo "Polling SonarQube status endpoint..."
+          STATUS=""
+          for i in $(seq 1 30); do
+            STATUS=$(curl -sf http://localhost:9000/api/system/status \
+              | python3 -c "import json,sys; print(json.load(sys.stdin).get('status',''))" 2>/dev/null || echo "")
+            echo "  attempt $i: '$STATUS'"
+            if [ "$STATUS" = "UP" ]; then
+              echo "SonarQube is UP"
+              break
+            fi
+            sleep 10
+          done
+          if [ "$STATUS" != "UP" ]; then
+            echo "SonarQube never became UP after 30 attempts"
+            exit 1
+          fi
+
+      - name: Bootstrap — generate token and create project
+        run: |
+          TOKEN_JSON=$(curl -sf -X POST -u "admin:admin" \
+            "http://localhost:9000/api/user_tokens/generate" \
+            -d "name=ci-token-${{ github.run_number }}")
+          TOKEN=$(echo "$TOKEN_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)['token'])")
+
+          curl -s -X POST -u "admin:admin" \
+            "http://localhost:9000/api/projects/create" \
+            -d "project=sonar-test-bad-code&name=SonarTestBadCode" > /dev/null || true
+
+          echo "SONARQUBE_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          echo "Bootstrap complete — token and project ready"
+
+      - name: Import quality profile
+        run: |
+          PROFILE_RESP=$(curl -sf -X POST -u "admin:admin" \
+            "http://localhost:9000/api/qualityprofiles/restore" \
+            -F "backup=@sonar/quality-profile-cs.xml")
+
+          PROFILE_NAME=$(echo "$PROFILE_RESP" | python3 -c \
+            "import json,sys; print(json.load(sys.stdin)['profile']['name'])")
+
+          curl -sf -X POST -u "admin:admin" \
+            "http://localhost:9000/api/qualityprofiles/set_default" \
+            --data-urlencode "language=cs" \
+            --data-urlencode "qualityProfile=$PROFILE_NAME"
+
+          echo "Quality profile '$PROFILE_NAME' imported and set as default for C#"
+
+      # -----------------------------------------------------------------------
+      # SonarQube scan
+      # -----------------------------------------------------------------------
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: SonarScanner begin
+        run: |
+          dotnet sonarscanner begin \
+            /k:"sonar-test-bad-code" \
+            /d:sonar.host.url="http://localhost:9000" \
+            /d:sonar.login="$SONARQUBE_TOKEN" \
+            /d:sonar.exclusions="scripts/**,output/**"
+
+      - name: Build (.NET Framework 4.8 via Mono MSBuild)
+        run: msbuild SonarTestBadCode.sln /p:Configuration=Release
+
+      - name: SonarScanner end
+        run: dotnet sonarscanner end /d:sonar.login="$SONARQUBE_TOKEN"
+
+      - name: Wait for SonarQube CE task to complete
+        run: |
+          CE_TASK_URL=$(python3 - << 'PYEOF'
+          props = {}
+          with open('.sonarqube/out/.sonar/report-task.txt') as f:
+              for line in f:
+                  line = line.strip()
+                  if '=' in line and not line.startswith('#'):
+                      k, v = line.split('=', 1)
+                      props[k] = v.replace('\\:', ':').replace('\\=', '=').replace('\\/', '/')
+          print(props.get('ceTaskUrl', ''))
+          PYEOF
+          )
+
+          echo "Polling CE task: $CE_TASK_URL"
+          STATUS=""
+          for i in $(seq 1 36); do
+            STATUS=$(curl -sf -u "$SONARQUBE_TOKEN:" "$CE_TASK_URL" \
+              | python3 -c "import json,sys; print(json.load(sys.stdin)['task']['status'])")
+            echo "  attempt $i: $STATUS"
+            if [ "$STATUS" = "SUCCESS" ]; then
+              break
+            fi
+            if [ "$STATUS" = "FAILED" ]; then
+              echo "CE task FAILED"
+              exit 1
+            fi
+            sleep 5
+          done
+          if [ "$STATUS" != "SUCCESS" ]; then
+            echo "CE task timed out after 36 attempts"
+            exit 1
+          fi
+
+      # -----------------------------------------------------------------------
+      # Fetch and batch issues
+      # -----------------------------------------------------------------------
+      - name: Fetch issues from SonarQube
+        env:
+          SONARQUBE_URL: http://localhost:9000
+          SONAR_PROJECT_KEYS: ${{ inputs.project_keys }}
+          SONAR_SEVERITIES: ${{ inputs.severities }}
+          SONAR_LANGUAGE: ${{ inputs.language_filter }}
+        run: python scripts/sonar/fetch_issues.py
+
+      - name: Batch issues by file
+        env:
+          WORKSPACE_ROOT: ${{ github.workspace }}
+          MAX_FILES: ${{ inputs.max_files }}
+        run: python scripts/sonar/batch_issues.py
+
+      # -----------------------------------------------------------------------
+      # Upload artifacts and open review PR
+      # -----------------------------------------------------------------------
+      - name: Upload output as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonar-batch-output-run-${{ github.run_number }}
+          path: output/
+
+      - name: Commit output files and create PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          OUTPUT_BRANCH="sonar/batch-output-${{ github.run_number }}"
+          BASE="agent/batching"
+
+          git checkout -b "$OUTPUT_BRANCH"
+          git add -f output/issues.json output/batches.json
+          git commit -m "ci: sonar batch output — run #${{ github.run_number }}"
+          git push origin "$OUTPUT_BRANCH"
+
+          ISSUES_COUNT=$(python3 -c \
+            "import json; d=json.load(open('output/issues.json')); print(d['total_fetched'])")
+          BATCHES_COUNT=$(python3 -c \
+            "import json; d=json.load(open('output/batches.json')); print(d['total_batches'])")
+
+          PR_URL=$(gh pr create \
+            --title "ci: sonar batch output — run #${{ github.run_number }}" \
+            --body "$(cat << EOF
+          ## SonarQube Batch Output — Run #${{ github.run_number }}
+
+          | Metric | Value |
+          |--------|-------|
+          | Issues fetched | ${ISSUES_COUNT} |
+          | Batches created | ${BATCHES_COUNT} |
+          | Severities | ${{ inputs.severities }} |
+          | Language filter | ${{ inputs.language_filter }} |
+          | Output branch | \`${OUTPUT_BRANCH}\` |
+
+          ### Files
+          - \`output/issues.json\` — raw issues from the SonarQube REST API
+          - \`output/batches.json\` — issues grouped per-class → per-type → numeric batch ID
+          EOF
+          )" \
+            --base "$BASE" \
+            --head "$OUTPUT_BRANCH")
+
+          cat >> "$GITHUB_STEP_SUMMARY" << EOF
+          ## SonarQube Batch Output — Run #${{ github.run_number }}
+
+          | Metric | Value |
+          |--------|-------|
+          | Issues fetched | $ISSUES_COUNT |
+          | Batches created | $BATCHES_COUNT |
+          | Severities | ${{ inputs.severities }} |
+          | Language filter | ${{ inputs.language_filter }} |
+          | Output branch | \`$OUTPUT_BRANCH\` |
+          | Pull request | $PR_URL |
+          EOF
+
+          echo "Branch pushed: $OUTPUT_BRANCH"
+          echo "PR created: $PR_URL"
