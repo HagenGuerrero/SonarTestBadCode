@@ -8,8 +8,8 @@ namespace SonarTestBadCode.Models
     public class UserModel
     {
         // S2386: mutable public static fields (2 findings)
-        public static List<UserModel> AllUsers = new List<UserModel>();
-        public static HashSet<string> BlacklistedEmails = new HashSet<string>();
+        private static readonly List<UserModel> AllUsers = new List<UserModel>();
+        private static readonly HashSet<string> BlacklistedEmails = new HashSet<string>();
 
         // S3963: static fields initialized to their default values (3 findings)
         private static string _defaultRole = null;
@@ -17,16 +17,16 @@ namespace SonarTestBadCode.Models
         private static bool _defaultActive = false;
 
         // S1144: unused private member (1 finding)
-        private string _unusedInternalNote = "internal";
+        private readonly string _unusedInternalNote = "internal";
 
         public int Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
 
         // S1186: empty method bodies (3 findings)
-        public void Validate() { }
-        public void Refresh() { }
-        protected virtual void OnPropertyChanged() { }
+        public void Validate() { /* intentionally empty */ }
+        public void Refresh() { /* intentionally empty */ }
+        protected virtual void OnPropertyChanged() { /* intentionally empty */ }
 
         // S112: System.Exception should not be thrown (1 finding)
         // S1172: unused params 'password' and 'rememberMe' (2 findings)
@@ -35,14 +35,14 @@ namespace SonarTestBadCode.Models
         {
             string unusedHash = null;
             int unusedAttempts = 0;
-            throw new Exception("Authentication not implemented");
+            throw new ArgumentException("Authentication not implemented");
         }
 
         // S112: System.Exception should not be thrown (1 finding)
         // S1172: unused params 'field', 'value', 'notifyObservers' (3 findings)
         public void UpdateProfile(string field, object value, bool notifyObservers)
         {
-            throw new Exception("UpdateProfile not implemented");
+            throw new ArgumentException("UpdateProfile not implemented");
         }
 
         // S3717: NotImplementedException should not be thrown (1 finding)
@@ -67,10 +67,7 @@ namespace SonarTestBadCode.Models
             {
                 return Name ?? "unknown_user";
             }
-            else
-            {
-                return Name ?? "unknown_user";
-            }
+            return Name ?? "unknown_user";
         }
 
         // S3400: method returns only a constant (1 finding)
@@ -82,15 +79,9 @@ namespace SonarTestBadCode.Models
         // S1066: nested if statements can be merged (2 findings)
         public bool IsEligible(int age, bool hasAccount)
         {
-            if (age >= 18)
+            if (age >= 18 && hasAccount && !string.IsNullOrEmpty(Email))
             {
-                if (hasAccount)
-                {
-                    if (!string.IsNullOrEmpty(Email))
-                    {
-                        return true;
-                    }
-                }
+                return true;
             }
             return false;
         }
@@ -133,19 +124,19 @@ namespace SonarTestBadCode.Models
         // S1172: unused param 'includeMeta' (1 finding)
         public string BuildReport(IEnumerable<string> fields, bool includeMeta)
         {
-            string report = "";
+            StringBuilder report = new StringBuilder();
             foreach (string field in fields)
             {
-                report += field + ": " + Name + "\n";
+                report.Append(field).Append(": ").Append(Name).Append("\n");
             }
-            return report;
+            return report.ToString();
         }
 
         // S1116: empty statements (2 findings)
         public void EmptyStatementDemo()
         {
-            int x = 0;;
-            x++;;
+            int x = 0;
+            x++;
             Console.WriteLine(x);
         }
 
@@ -185,14 +176,11 @@ namespace SonarTestBadCode.Models
         // S1764: identical expressions on both sides of an operator (2 findings)
         public bool CanRetryProfile(int attempt, int maxAttempts)
         {
-            if (attempt >= 0)
+            if (attempt >= 0 && attempt < maxAttempts)
             {
-                if (attempt < maxAttempts)
-                {
-                    bool sameAttempt = attempt == attempt;
-                    bool sameMax = maxAttempts == maxAttempts;
-                    return sameAttempt && sameMax;
-                }
+                bool sameAttempt = attempt == attempt;
+                bool sameMax = maxAttempts == maxAttempts;
+                return sameAttempt && sameMax;
             }
             return false;
         }
@@ -206,8 +194,8 @@ namespace SonarTestBadCode.Models
         }
 
         // S1186: empty method bodies (2 findings)
-        public void OnProfileStarted() { }
-        public void OnProfileStopped() { }
+        public void OnProfileStarted() { /* intentionally empty */ }
+        public void OnProfileStopped() { /* intentionally empty */ }
 
         // S3400: method returns only a constant (1 finding)
         public int GetDefaultProfileLimit() { return 3; }
@@ -221,7 +209,7 @@ namespace SonarTestBadCode.Models
         // S1116: empty statement (1 finding)
         public void ProfileHeartbeat()
         {
-            int beat = 1;;
+            int beat = 1;
             Console.WriteLine(beat);
         }
 
@@ -230,60 +218,57 @@ namespace SonarTestBadCode.Models
         // S134: control flow statements nested too deeply (1 finding)
         public string EvaluateProfileStrategy(int recordCount, int batchSize, string mode, bool flagA, bool flagB)
         {
-            string outcome = "";
-            if (recordCount > 0)
+            StringBuilder outcome = new StringBuilder();
+            if (recordCount > 0 && batchSize > 0)
             {
-                if (batchSize > 0)
+                if (recordCount >= batchSize)
                 {
-                    if (recordCount >= batchSize)
+                    if (mode == "full")
                     {
-                        if (mode == "full")
+                        for (int i = 0; i < recordCount; i++)
                         {
-                            for (int i = 0; i < recordCount; i++)
+                            if (i % 2 == 0)
                             {
-                                if (i % 2 == 0)
+                                if (flagA && flagB)
                                 {
-                                    if (flagA && flagB)
-                                    {
-                                        outcome += "synced";
-                                    }
-                                    else if (flagA || flagB)
-                                    {
-                                        outcome += "partial";
-                                    }
-                                    else
-                                    {
-                                        outcome += "skipped";
-                                    }
+                                    outcome.Append("synced");
+                                }
+                                else if (flagA || flagB)
+                                {
+                                    outcome.Append("partial");
                                 }
                                 else
                                 {
-                                    switch (i % 3)
-                                    {
-                                        case 0: outcome += "a"; break;
-                                        case 1: outcome += "b"; break;
-                                        case 2: outcome += "c"; break;
-                                        default: outcome += "d"; break;
-                                    }
+                                    outcome.Append("skipped");
+                                }
+                            }
+                            else
+                            {
+                                switch (i % 3)
+                                {
+                                    case 0: outcome.Append("a"); break;
+                                    case 1: outcome.Append("b"); break;
+                                    case 2: outcome.Append("c"); break;
+                                    default: outcome.Append("d"); break;
                                 }
                             }
                         }
-                        else if (mode == "incremental")
+                    }
+                    else if (mode == "incremental")
+                    {
+                        while (batchSize > 0)
                         {
-                            while (batchSize > 0)
-                            {
-                                batchSize--;
-                                if (batchSize == recordCount) outcome += "match";
-                            }
+                            batchSize--;
+                            if (batchSize == recordCount) outcome.Append("match");
                         }
-                        else
-                        {
-                            outcome += "unknown-mode";
-                        }
+                    }
+                    else
+                    {
+                        outcome.Append("unknown-mode");
                     }
                 }
             }
-            return outcome;
+            return outcome.ToString();
         }
 
         // S107: method has too many parameters (1 finding)
