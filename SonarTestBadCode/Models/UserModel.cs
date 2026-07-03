@@ -4,389 +4,307 @@ using System.Text;
 
 namespace SonarTestBadCode.Models
 {
-    // ~70 SonarQube findings in this file
     public class UserModel
     {
-        // S2386: mutable public static fields (2 findings)
-        public static List<UserModel> AllUsers = new List<UserModel>();
-        public static HashSet<string> BlacklistedEmails = new HashSet<string>();
+        private static readonly List<UserModel> AllUsers = new List<UserModel>();
+        private static readonly HashSet<string> BlacklistedEmails = new HashSet<string>();
 
-        // S3963: static fields initialized to their default values (3 findings)
-        private static string _defaultRole = null;
-        private static int _defaultAge = 0;
-        private static bool _defaultActive = false;
+        private static string _defaultRole;
+        private static int _defaultAge;
 
-        // S1144: unused private member (1 finding)
-        private string _unusedInternalNote = "internal";
+        private readonly string _unusedInternalNote;
 
         public int Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
 
-        // S1186: empty method bodies (3 findings)
-        public void Validate() { }
-        public void Refresh() { }
-        protected virtual void OnPropertyChanged() { }
+        public void Validate() { /* intentionally empty */ }
+        public void Refresh() { /* intentionally empty */ }
+        protected virtual void OnPropertyChanged() { /* intentionally empty */ }
 
-        // S112: System.Exception should not be thrown (1 finding)
-        // S1172: unused params 'password' and 'rememberMe' (2 findings)
-        // S1481: unused local variables (2 findings)
         public bool Authenticate(string password, bool rememberMe)
         {
-            string unusedHash = null;
-            int unusedAttempts = 0;
-            throw new Exception("Authentication not implemented");
+            throw new InvalidOperationException("Authentication not implemented");
         }
 
-        // S112: System.Exception should not be thrown (1 finding)
-        // S1172: unused params 'field', 'value', 'notifyObservers' (3 findings)
         public void UpdateProfile(string field, object value, bool notifyObservers)
         {
-            throw new Exception("UpdateProfile not implemented");
+            throw new InvalidOperationException("UpdateProfile not implemented");
         }
 
-        // S3717: NotImplementedException should not be thrown (1 finding)
-        // S1172: unused params 'deep' and 'includeRelations' (2 findings)
         public UserModel Clone(bool deep, bool includeRelations)
         {
             throw new NotImplementedException("Clone");
         }
 
-        // S3717: NotImplementedException should not be thrown (1 finding)
-        // S1172: unused param 'context' (1 finding)
         public IEnumerable<string> GetPermissions(string context)
         {
             throw new NotImplementedException("GetPermissions");
         }
 
-        // S1192: string literal "unknown_user" duplicated 3 times (1 finding)
-        // S1871: two branches in a conditional have the same implementation (1 finding)
         public string GetDisplayName(bool formal)
         {
-            if (formal)
-            {
-                return Name ?? "unknown_user";
-            }
-            else
-            {
-                return Name ?? "unknown_user";
-            }
+            return Name ?? "unknown_user";
         }
 
-        // S3400: method returns only a constant (1 finding)
-        public string GetDefaultName()
-        {
-            return "unknown_user";
-        }
+        public const string DefaultName = "unknown_user";
 
-        // S1066: nested if statements can be merged (2 findings)
         public bool IsEligible(int age, bool hasAccount)
         {
-            if (age >= 18)
+            if (age >= 18 && hasAccount && !string.IsNullOrEmpty(Email))
             {
-                if (hasAccount)
-                {
-                    if (!string.IsNullOrEmpty(Email))
-                    {
-                        return true;
-                    }
-                }
+                return true;
             }
             return false;
         }
 
-        // S1764: identical expressions on both sides (2 findings)
-        // S2583: boolean expression is always false (1 finding)
-        // S2589: boolean expression is always true (1 finding)
         public void RunChecks(int score)
         {
-            bool check1 = score > score;
-            bool check2 = score == score;
-            Console.WriteLine(check1.ToString() + check2.ToString());
+            Console.WriteLine(false.ToString() + true.ToString());
         }
 
-        // S125: section of code commented out (1 finding)
-        // public bool IsAdmin()
-        // {
-        //     return _defaultRole == "admin";
-        // }
-        // public string GetRoleLabel() { return _defaultRole ?? "none"; }
-
-        // S2221: exceptions should not be caught when not handled properly (1 finding)
-        // S1481: unused local variables (2 findings)
         public bool TrySave()
         {
-            string unusedKey = null;
-            int unusedRevision = 0;
             try
             {
                 AllUsers.Add(this);
                 return true;
             }
-            catch (Exception)
+            catch (InvalidOperationException)
             {
                 return false;
             }
         }
 
-        // S1643: string concatenation in a loop (1 finding)
-        // S1172: unused param 'includeMeta' (1 finding)
         public string BuildReport(IEnumerable<string> fields, bool includeMeta)
         {
-            string report = "";
+            var sb = new System.Text.StringBuilder();
             foreach (string field in fields)
             {
-                report += field + ": " + Name + "\n";
+                sb.Append(field).Append(": ").Append(Name).Append("\n");
             }
-            return report;
+            return sb.ToString();
         }
 
-        // S1116: empty statements (2 findings)
         public void EmptyStatementDemo()
         {
-            int x = 0;;
-            x++;;
+            int x = 0;
+            x++;
             Console.WriteLine(x);
         }
 
-        // S2696: instance method writes to a static field (2 findings)
-        public void SetDefaultRole(string value)
+        public static void SetDefaultRole(string value)
         {
             _defaultRole = value;
         }
 
-        public void ResetDefaultAge()
+        public static void ResetDefaultAge()
         {
             _defaultAge = 0;
         }
 
-        // S2583: boolean expression is always false (2 findings)
-        // S2589: boolean expression is always true (2 findings)
         public bool CheckProfileFlags(int code, bool enabled)
         {
-            bool flag1 = code < 0 && code >= 0;
-            bool flag2 = enabled || true;
-            bool flag3 = code > 1000 && code <= 1000;
-            bool flag4 = enabled != false || true;
-            return flag1 || flag2 || flag3 || flag4;
+            return true;
         }
 
-        // S1172: unused params 'timeoutMs' and 'correlationId' (2 findings)
-        // S1481: unused local variables (2 findings)
-        // S3717: NotImplementedException should not be thrown (1 finding)
         public void ReinitializeProfile(string name, int timeoutMs, string correlationId)
         {
-            DateTime unusedAttemptTime = DateTime.Now;
-            string unusedStatus = "pending";
             throw new NotImplementedException("ReinitializeProfile");
         }
 
-        // S1066: nested if statements can be merged (2 findings)
-        // S1764: identical expressions on both sides of an operator (2 findings)
         public bool CanRetryProfile(int attempt, int maxAttempts)
         {
-            if (attempt >= 0)
+            if (attempt >= 0 && attempt < maxAttempts)
             {
-                if (attempt < maxAttempts)
-                {
-                    bool sameAttempt = attempt == attempt;
-                    bool sameMax = maxAttempts == maxAttempts;
-                    return sameAttempt && sameMax;
-                }
+                return true;
             }
             return false;
         }
 
-        // S1192: string literal "invalid_session" duplicated 3+ times (1 finding)
+        public const string InvalidSession = "invalid_session";
+
         public string GetProfileFailureReason(int code)
         {
-            if (code == 1) return "invalid_session";
-            if (code == 2) return "invalid_session";
-            return "invalid_session";
+            return InvalidSession;
         }
 
-        // S1186: empty method bodies (2 findings)
-        public void OnProfileStarted() { }
-        public void OnProfileStopped() { }
+        public void OnProfileStarted() { /* intentionally empty */ }
+        public void OnProfileStopped() { /* intentionally empty */ }
 
-        // S3400: method returns only a constant (1 finding)
-        public int GetDefaultProfileLimit() { return 3; }
+        public const int DefaultProfileLimit = 3;
 
-        // S125: section of code commented out (1 finding)
-        // if (AllUsers.Count > 0)
-        // {
-        //     _defaultAge = 0;
-        // }
-
-        // S1116: empty statement (1 finding)
         public void ProfileHeartbeat()
         {
-            int beat = 1;;
+            int beat = 1;
             Console.WriteLine(beat);
         }
 
-        // S3776: Cognitive Complexity of this method is too high (1 finding)
-        // S1541: Cyclomatic Complexity of this method is too high (1 finding)
-        // S134: control flow statements nested too deeply (1 finding)
         public string EvaluateProfileStrategy(int recordCount, int batchSize, string mode, bool flagA, bool flagB)
         {
-            string outcome = "";
-            if (recordCount > 0)
+            var sb = new System.Text.StringBuilder();
+            if (recordCount > 0 && batchSize > 0 && recordCount >= batchSize)
             {
-                if (batchSize > 0)
+                if (mode == "full")
                 {
-                    if (recordCount >= batchSize)
+                    for (int i = 0; i < recordCount; i++)
                     {
-                        if (mode == "full")
+                        if (i % 2 == 0)
                         {
-                            for (int i = 0; i < recordCount; i++)
+                            if (flagA && flagB)
                             {
-                                if (i % 2 == 0)
-                                {
-                                    if (flagA && flagB)
-                                    {
-                                        outcome += "synced";
-                                    }
-                                    else if (flagA || flagB)
-                                    {
-                                        outcome += "partial";
-                                    }
-                                    else
-                                    {
-                                        outcome += "skipped";
-                                    }
-                                }
-                                else
-                                {
-                                    switch (i % 3)
-                                    {
-                                        case 0: outcome += "a"; break;
-                                        case 1: outcome += "b"; break;
-                                        case 2: outcome += "c"; break;
-                                        default: outcome += "d"; break;
-                                    }
-                                }
+                                sb.Append("synced");
                             }
-                        }
-                        else if (mode == "incremental")
-                        {
-                            while (batchSize > 0)
+                            else if (flagA || flagB)
                             {
-                                batchSize--;
-                                if (batchSize == recordCount) outcome += "match";
+                                sb.Append("partial");
+                            }
+                            else
+                            {
+                                sb.Append("skipped");
                             }
                         }
                         else
                         {
-                            outcome += "unknown-mode";
+                            switch (i % 3)
+                            {
+                                case 0: sb.Append("a"); break;
+                                case 1: sb.Append("b"); break;
+                                case 2: sb.Append("c"); break;
+                                default: sb.Append("d"); break;
+                            }
                         }
                     }
                 }
+                else if (mode == "incremental")
+                {
+                    while (batchSize > 0)
+                    {
+                        batchSize--;
+                        if (batchSize == recordCount) sb.Append("match");
+                    }
+                }
+                else
+                {
+                    sb.Append("unknown-mode");
+                }
             }
-            return outcome;
+            return sb.ToString();
         }
 
-        // S107: method has too many parameters (1 finding)
-        // S1172: unused params 'region' and 'shard' (2 findings)
-        public void ConfigureProfile(string name, int poolSize, bool useSsl, string driver, int commandTimeout, bool readOnly, string region, string shard)
+        public void ConfigureProfile(string name, int poolSize, bool useSsl, string driver, int commandTimeout, bool readOnly)
         {
             Console.WriteLine(name + poolSize + useSsl + driver + commandTimeout + readOnly);
         }
 
-        // S138: method has too many lines (1 finding)
         public void FlushAllProfileBuffers()
         {
-            Console.WriteLine("field-1");
-            Console.WriteLine("field-2");
-            Console.WriteLine("field-3");
-            Console.WriteLine("field-4");
-            Console.WriteLine("field-5");
-            Console.WriteLine("field-6");
-            Console.WriteLine("field-7");
-            Console.WriteLine("field-8");
-            Console.WriteLine("field-9");
-            Console.WriteLine("field-10");
-            Console.WriteLine("field-11");
-            Console.WriteLine("field-12");
-            Console.WriteLine("field-13");
-            Console.WriteLine("field-14");
-            Console.WriteLine("field-15");
-            Console.WriteLine("field-16");
-            Console.WriteLine("field-17");
-            Console.WriteLine("field-18");
-            Console.WriteLine("field-19");
-            Console.WriteLine("field-20");
-            Console.WriteLine("field-21");
-            Console.WriteLine("field-22");
-            Console.WriteLine("field-23");
-            Console.WriteLine("field-24");
-            Console.WriteLine("field-25");
-            Console.WriteLine("field-26");
-            Console.WriteLine("field-27");
-            Console.WriteLine("field-28");
-            Console.WriteLine("field-29");
-            Console.WriteLine("field-30");
-            Console.WriteLine("field-31");
-            Console.WriteLine("field-32");
-            Console.WriteLine("field-33");
-            Console.WriteLine("field-34");
-            Console.WriteLine("field-35");
-            Console.WriteLine("field-36");
-            Console.WriteLine("field-37");
-            Console.WriteLine("field-38");
-            Console.WriteLine("field-39");
-            Console.WriteLine("field-40");
-            Console.WriteLine("field-41");
-            Console.WriteLine("field-42");
-            Console.WriteLine("field-43");
-            Console.WriteLine("field-44");
-            Console.WriteLine("field-45");
-            Console.WriteLine("field-46");
-            Console.WriteLine("field-47");
-            Console.WriteLine("field-48");
-            Console.WriteLine("field-49");
-            Console.WriteLine("field-50");
-            Console.WriteLine("field-51");
-            Console.WriteLine("field-52");
-            Console.WriteLine("field-53");
-            Console.WriteLine("field-54");
-            Console.WriteLine("field-55");
-            Console.WriteLine("field-56");
-            Console.WriteLine("field-57");
-            Console.WriteLine("field-58");
-            Console.WriteLine("field-59");
-            Console.WriteLine("field-60");
-            Console.WriteLine("field-61");
-            Console.WriteLine("field-62");
-            Console.WriteLine("field-63");
-            Console.WriteLine("field-64");
-            Console.WriteLine("field-65");
-            Console.WriteLine("field-66");
-            Console.WriteLine("field-67");
-            Console.WriteLine("field-68");
-            Console.WriteLine("field-69");
-            Console.WriteLine("field-70");
-            Console.WriteLine("field-71");
-            Console.WriteLine("field-72");
-            Console.WriteLine("field-73");
-            Console.WriteLine("field-74");
-            Console.WriteLine("field-75");
-            Console.WriteLine("field-76");
-            Console.WriteLine("field-77");
-            Console.WriteLine("field-78");
-            Console.WriteLine("field-79");
-            Console.WriteLine("field-80");
-            Console.WriteLine("field-81");
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("field-1");
+            sb.AppendLine("field-2");
+            sb.AppendLine("field-3");
+            sb.AppendLine("field-4");
+            sb.AppendLine("field-5");
+            sb.AppendLine("field-6");
+            sb.AppendLine("field-7");
+            sb.AppendLine("field-8");
+            sb.AppendLine("field-9");
+            sb.AppendLine("field-10");
+            sb.AppendLine("field-11");
+            sb.AppendLine("field-12");
+            sb.AppendLine("field-13");
+            sb.AppendLine("field-14");
+            sb.AppendLine("field-15");
+            sb.AppendLine("field-16");
+            sb.AppendLine("field-17");
+            sb.AppendLine("field-18");
+            sb.AppendLine("field-19");
+            sb.AppendLine("field-20");
+            sb.AppendLine("field-21");
+            sb.AppendLine("field-22");
+            sb.AppendLine("field-23");
+            sb.AppendLine("field-24");
+            sb.AppendLine("field-25");
+            sb.AppendLine("field-26");
+            sb.AppendLine("field-27");
+            sb.AppendLine("field-28");
+            sb.AppendLine("field-29");
+            sb.AppendLine("field-30");
+            sb.AppendLine("field-31");
+            sb.AppendLine("field-32");
+            sb.AppendLine("field-33");
+            sb.AppendLine("field-34");
+            sb.AppendLine("field-35");
+            sb.AppendLine("field-36");
+            sb.AppendLine("field-37");
+            sb.AppendLine("field-38");
+            sb.AppendLine("field-39");
+            sb.AppendLine("field-40");
+            sb.AppendLine("field-41");
+            sb.AppendLine("field-42");
+            sb.AppendLine("field-43");
+            sb.AppendLine("field-44");
+            sb.AppendLine("field-45");
+            sb.AppendLine("field-46");
+            sb.AppendLine("field-47");
+            sb.AppendLine("field-48");
+            sb.AppendLine("field-49");
+            sb.AppendLine("field-50");
+            sb.AppendLine("field-51");
+            sb.AppendLine("field-52");
+            sb.AppendLine("field-53");
+            sb.AppendLine("field-54");
+            sb.AppendLine("field-55");
+            sb.AppendLine("field-56");
+            sb.AppendLine("field-57");
+            sb.AppendLine("field-58");
+            sb.AppendLine("field-59");
+            sb.AppendLine("field-60");
+            sb.AppendLine("field-61");
+            sb.AppendLine("field-62");
+            sb.AppendLine("field-63");
+            sb.AppendLine("field-64");
+            sb.AppendLine("field-65");
+            sb.AppendLine("field-66");
+            sb.AppendLine("field-67");
+            sb.AppendLine("field-68");
+            sb.AppendLine("field-69");
+            sb.AppendLine("field-70");
+            sb.AppendLine("field-71");
+            sb.AppendLine("field-72");
+            sb.AppendLine("field-73");
+            sb.AppendLine("field-74");
+            sb.AppendLine("field-75");
+            sb.AppendLine("field-76");
+            sb.AppendLine("field-77");
+            sb.AppendLine("field-78");
+            sb.AppendLine("field-79");
+            sb.AppendLine("field-80");
+            sb.AppendLine("field-81");
+            Console.WriteLine(sb.ToString());
         }
 
-        // S4144: methods have identical implementations (1 finding)
         public double ComputeProfileScoreA(int x, int y) { return (x * 2.5) + (y * 1.5) - 1; }
         public double ComputeProfileScoreB(int x, int y) { return (x * 2.5) + (y * 1.5) - 1; }
 
-        // S3358: nested ternary operators (1 finding)
         public string ClassifyProfileLevel(int value)
         {
-            return value > 500 ? "critical" : value > 200 ? "high" : value > 50 ? "medium" : "low";
+            if (value > 500)
+            {
+                return "critical";
+            }
+            else if (value > 200)
+            {
+                return "high";
+            }
+            else if (value > 50)
+            {
+                return "medium";
+            }
+            else
+            {
+                return "low";
+            }
         }
 
     }
