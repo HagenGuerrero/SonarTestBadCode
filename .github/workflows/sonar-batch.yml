@@ -19,19 +19,10 @@ on:
         description: 'Max files to batch (0 = unlimited)'
         required: false
         default: '0'
-      max_issues_per_call:
-        description: 'Max issues per AI call — lower value reduces hallucination risk'
-        required: false
-        default: '15'
-      base_branch:
-        description: 'Target branch for the AI fix PR'
-        required: false
-        default: 'main'
 
 permissions:
   contents: write
   pull-requests: write
-  models: read
 
 jobs:
   sonar-batch:
@@ -222,37 +213,64 @@ jobs:
         run: python scripts/sonar/batch_issues.py
 
       # -----------------------------------------------------------------------
-      # AI fix loop + PR creation
+      # Upload artifacts and open review PR
       # -----------------------------------------------------------------------
-      - name: AI fix batches
-        id: fix
-        env:
-          COPILOT_TOKEN: ${{ secrets.COPILOT_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MAX_ISSUES_PER_CALL: ${{ inputs.max_issues_per_call }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-          WORKSPACE_ROOT: ${{ github.workspace }}
-        run: |
-          python scripts/ai/fix_batch.py
-          EXIT=$?
-          echo "exit_code=$EXIT" >> "$GITHUB_OUTPUT"
-          # exit 2 = all skipped (non-fatal) — treat as success for the step
-          # exit 3 = fatal — fail the step
-          [ $EXIT -eq 3 ] && exit 1 || exit 0
-
-      - name: Upload output and fix results as workflow artifact
+      - name: Upload output as workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sonar-fix-run-${{ github.run_number }}
+          name: sonar-batch-output-run-${{ github.run_number }}
           path: output/
 
-      - name: Create fix PR
-        if: steps.fix.outputs.exit_code != '3'
+      - name: Commit output files and create PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-          GITHUB_RUN_NUMBER: ${{ github.run_number }}
-          GITHUB_BASE_BRANCH: ${{ inputs.base_branch }}
-          FIX_EXIT_CODE: ${{ steps.fix.outputs.exit_code }}
-        run: python scripts/git/create_pr.py
+        run: |
+          OUTPUT_BRANCH="sonar/batch-output-${{ github.run_number }}"
+          BASE="agent/batching"
+
+          git checkout -b "$OUTPUT_BRANCH"
+          git add -f output/issues.json output/batches.json
+          git commit -m "ci: sonar batch output — run #${{ github.run_number }}"
+          git push origin "$OUTPUT_BRANCH"
+
+          ISSUES_COUNT=$(python3 -c \
+            "import json; d=json.load(open('output/issues.json')); print(d['total_fetched'])")
+          BATCHES_COUNT=$(python3 -c \
+            "import json; d=json.load(open('output/batches.json')); print(d['total_batches'])")
+
+          PR_URL=$(gh pr create \
+            --title "ci: sonar batch output — run #${{ github.run_number }}" \
+            --body "$(cat << EOF
+          ## SonarQube Batch Output — Run #${{ github.run_number }}
+
+          | Metric | Value |
+          |--------|-------|
+          | Issues fetched | ${ISSUES_COUNT} |
+          | Batches created | ${BATCHES_COUNT} |
+          | Severities | ${{ inputs.severities }} |
+          | Language filter | ${{ inputs.language_filter }} |
+          | Output branch | \`${OUTPUT_BRANCH}\` |
+
+          ### Files
+          - \`output/issues.json\` — raw issues from the SonarQube REST API
+          - \`output/batches.json\` — issues grouped per-class → per-type → numeric batch ID
+          EOF
+          )" \
+            --base "$BASE" \
+            --head "$OUTPUT_BRANCH")
+
+          cat >> "$GITHUB_STEP_SUMMARY" << EOF
+          ## SonarQube Batch Output — Run #${{ github.run_number }}
+
+          | Metric | Value |
+          |--------|-------|
+          | Issues fetched | $ISSUES_COUNT |
+          | Batches created | $BATCHES_COUNT |
+          | Severities | ${{ inputs.severities }} |
+          | Language filter | ${{ inputs.language_filter }} |
+          | Output branch | \`$OUTPUT_BRANCH\` |
+          | Pull request | $PR_URL |
+          EOF
+
+          echo "Branch pushed: $OUTPUT_BRANCH"
+          echo "PR created: $PR_URL"
