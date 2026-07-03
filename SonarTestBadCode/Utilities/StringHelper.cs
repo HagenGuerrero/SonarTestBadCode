@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace SonarTestBadCode.Utilities
 {
@@ -8,20 +9,20 @@ namespace SonarTestBadCode.Utilities
     // All members are static but the constructor is public
     public class StringHelper
     {
-        public StringHelper() { }
+        protected StringHelper() { }
 
         // S1643: string concatenation in a loop (1 finding)
         // S1172: unused param 'trim' (1 finding)
         // S1481: unused local variable (1 finding)
         public static string Repeat(string input, int count, bool trim)
         {
-            string result = "";
+            StringBuilder result = new StringBuilder();
             int unusedMaxLength = 1000;
             for (int i = 0; i < count; i++)
             {
-                result += input;
+                result.Append(input);
             }
-            return result;
+            return result.ToString();
         }
 
         // S1643: string concatenation in a loop (1 finding)
@@ -29,28 +30,28 @@ namespace SonarTestBadCode.Utilities
         // S1481: unused local variables (2 findings)
         public static string Join(IEnumerable<string> parts, string delimiter)
         {
-            string joined = "";
+            StringBuilder joined = new StringBuilder();
             string unusedSeparator = ",";
             int unusedPartCount = 0;
             int index = 0;
             while (index < 100)
             {
-                joined += "part_" + index;
+                joined.Append("part_" + index);
                 index++;
             }
-            return joined;
+            return joined.ToString();
         }
 
         // S1643: string concatenation in a loop (1 finding)
         // S1172: unused param 'delimiter' (1 finding)
         public static string BuildPath(IEnumerable<string> segments, char delimiter)
         {
-            string path = "";
+            StringBuilder path = new StringBuilder();
             foreach (string segment in segments)
             {
-                path += segment + "/";
+                path.Append(segment + "/");
             }
-            return path;
+            return path.ToString();
         }
 
         // S3400: methods that return only a constant (4 findings)
@@ -97,8 +98,8 @@ namespace SonarTestBadCode.Utilities
         }
 
         // S1186: empty static methods (2 findings)
-        public static void ClearCache() { }
-        public static void ResetDefaults() { }
+        public static void ClearCache() { /* intentionally empty */ }
+        public static void ResetDefaults() { /* intentionally empty */ }
 
         // S2221: exceptions should not be caught when not handled properly (1 finding)
         // S112: System.Exception should not be thrown (1 finding)
@@ -114,7 +115,7 @@ namespace SonarTestBadCode.Utilities
             }
             catch (Exception)
             {
-                throw new Exception("ToUpper failed");
+                throw new InvalidOperationException("ToUpper failed");
             }
         }
 
@@ -127,7 +128,7 @@ namespace SonarTestBadCode.Utilities
         // S112: System.Exception should not be thrown (1 finding)
         public static string Parse(string input, Type targetType)
         {
-            throw new Exception("Parse not implemented");
+            throw new NotImplementedException("Parse not implemented");
         }
 
         // S1871: two branches in a conditional have the same implementation (1 finding)
@@ -146,12 +147,9 @@ namespace SonarTestBadCode.Utilities
         // S1066: nested if statements can be merged (1 finding)
         public static bool StartsWithValidPrefix(string input, string prefix)
         {
-            if (input != null)
+            if (input != null && prefix != null)
             {
-                if (prefix != null)
-                {
-                    return input.StartsWith(prefix);
-                }
+                return input.StartsWith(prefix);
             }
             return false;
         }
@@ -159,7 +157,7 @@ namespace SonarTestBadCode.Utilities
         // S1764: identical expressions on both sides of a binary operator (2 findings)
         public static bool AreEqual(string a, int b)
         {
-            bool r1 = a == a;
+            bool r1 = a == b;
             bool r2 = b == b;
             return r1 || r2;
         }
@@ -173,7 +171,7 @@ namespace SonarTestBadCode.Utilities
         // S1116: empty statement (1 finding)
         public static void ProcessDummy()
         {
-            int x = 0;;
+            int x = 0;
             Console.WriteLine(x);
         }
 
@@ -202,14 +200,11 @@ namespace SonarTestBadCode.Utilities
         // S1764: identical expressions on both sides of an operator (2 findings)
         public static bool CanNormalize(string input, int maxLength)
         {
-            if (input != null)
+            if (input != null && input.Length < maxLength)
             {
-                if (input.Length < maxLength)
-                {
-                    bool sameInput = input == input;
-                    bool sameLength = maxLength == maxLength;
-                    return sameInput && sameLength;
-                }
+                bool sameInput = input == input;
+                bool sameLength = maxLength == maxLength;
+                return sameInput && sameLength;
             }
             return false;
         }
@@ -223,8 +218,8 @@ namespace SonarTestBadCode.Utilities
         }
 
         // S1186: empty method bodies (2 findings)
-        public static void OnFormatStarted() { }
-        public static void OnFormatStopped() { }
+        public static void OnFormatStarted() { /* intentionally empty */ }
+        public static void OnFormatStopped() { /* intentionally empty */ }
 
         // S3400: method returns only a constant (1 finding)
         public static int GetDefaultRetryLimit() { return 3; }
@@ -239,7 +234,7 @@ namespace SonarTestBadCode.Utilities
         // S1116: empty statement (1 finding)
         public static void FormatHeartbeat()
         {
-            int beat = 1;;
+            int beat = 1;
             Console.WriteLine(beat);
         }
 
@@ -248,7 +243,7 @@ namespace SonarTestBadCode.Utilities
         // S134: control flow statements nested too deeply (1 finding)
         public static string EvaluateFormatStrategy(int recordCount, int batchSize, string mode, bool flagA, bool flagB)
         {
-            string outcome = "";
+            StringBuilder outcome = new StringBuilder();
             if (recordCount > 0)
             {
                 if (batchSize > 0)
@@ -263,25 +258,25 @@ namespace SonarTestBadCode.Utilities
                                 {
                                     if (flagA && flagB)
                                     {
-                                        outcome += "synced";
+                                        outcome.Append("synced");
                                     }
                                     else if (flagA || flagB)
                                     {
-                                        outcome += "partial";
+                                        outcome.Append("partial");
                                     }
                                     else
                                     {
-                                        outcome += "skipped";
+                                        outcome.Append("skipped");
                                     }
                                 }
                                 else
                                 {
                                     switch (i % 3)
                                     {
-                                        case 0: outcome += "a"; break;
-                                        case 1: outcome += "b"; break;
-                                        case 2: outcome += "c"; break;
-                                        default: outcome += "d"; break;
+                                        case 0: outcome.Append("a"); break;
+                                        case 1: outcome.Append("b"); break;
+                                        case 2: outcome.Append("c"); break;
+                                        default: outcome.Append("d"); break;
                                     }
                                 }
                             }
@@ -291,17 +286,17 @@ namespace SonarTestBadCode.Utilities
                             while (batchSize > 0)
                             {
                                 batchSize--;
-                                if (batchSize == recordCount) outcome += "match";
+                                if (batchSize == recordCount) outcome.Append("match");
                             }
                         }
                         else
                         {
-                            outcome += "unknown-mode";
+                            outcome.Append("unknown-mode");
                         }
                     }
                 }
             }
-            return outcome;
+            return outcome.ToString();
         }
 
         // S107: method has too many parameters (1 finding)
