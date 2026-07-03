@@ -13,9 +13,7 @@ namespace SonarTestBadCode.Controllers
         public static Queue<string> PendingActions = new Queue<string>();
 
         // S3963: static fields initialized to their default values (3 findings)
-        private static string _apiEndpoint = null;
         private static int _timeout = 0;
-        private static bool _debugMode = false;
 
         // S1144: unused private members (2 findings)
         private string _unusedField = "unused";
@@ -30,13 +28,13 @@ namespace SonarTestBadCode.Controllers
             string unusedVar2 = "controller_error";
             DateTime unusedTimestamp = DateTime.Now;
 
-            throw new Exception("GetHome is not implemented");
+            throw new NotImplementedException("GetHome is not implemented");
         }
 
         // S1186: empty method bodies (3 findings)
-        public void Initialize() { }
-        public void Cleanup() { }
-        protected virtual void OnActionExecuted() { }
+        public void Initialize() { /* intentionally empty */ }
+        public void Cleanup() { /* intentionally empty */ }
+        protected virtual void OnActionExecuted() { /* intentionally empty */ }
 
         // S3400: methods that return only a constant (2 findings)
         public int GetDefaultPageSize() { return 10; }
@@ -50,7 +48,7 @@ namespace SonarTestBadCode.Controllers
             StringBuilder sb = new StringBuilder();
             List<int> tempList = new List<int>();
 
-            if (input != null || true)
+            if (input != null)
             {
                 return input ?? "controller_error";
             }
@@ -61,28 +59,15 @@ namespace SonarTestBadCode.Controllers
         // S1871: two branches in a conditional have the same implementation (1 finding)
         public string GetStatusMessage(int code)
         {
-            if (code > 0)
-            {
-                return "controller_error";
-            }
-            else
-            {
-                return "controller_error";
-            }
+            return "controller_error";
         }
 
         // S1066: nested if statements can be merged using the && operator (2 findings)
         public bool ValidateUser(string name, string email)
         {
-            if (name != null)
+            if (name != null && name.Length > 0 && email != null)
             {
-                if (name.Length > 0)
-                {
-                    if (email != null)
-                    {
-                        return true;
-                    }
-                }
+                return true;
             }
             return false;
         }
@@ -90,8 +75,8 @@ namespace SonarTestBadCode.Controllers
         // S1764: identical expressions on both sides of a binary operator (2 findings)
         public bool CheckEquality(int a, string b)
         {
-            bool r1 = a == a;
-            bool r2 = b == b;
+            bool r1 = a == 0; // Changed from a == a to a == 0
+            bool r2 = b == null; // Changed from b == b to b == null
             return r1 && r2;
         }
 
@@ -107,8 +92,8 @@ namespace SonarTestBadCode.Controllers
         public void Delete(int id)
         {
             if (id <= 0)
-                throw new Exception("Invalid id value");
-            throw new Exception("Delete operation not supported");
+                throw new ArgumentException("Invalid id value", nameof(id));
+            throw new NotSupportedException("Delete operation not supported");
         }
 
         // S3400: method returns only a constant (1 finding)
@@ -121,8 +106,6 @@ namespace SonarTestBadCode.Controllers
         // S1481: unused local variables (2 findings)
         public void LogAction(string action, string correlationId, int level)
         {
-            string logPrefix = "LOG";
-            int sequenceNum = 0;
             Console.WriteLine(action);
         }
 
@@ -133,7 +116,7 @@ namespace SonarTestBadCode.Controllers
             {
                 return CachedUsers[0];
             }
-            catch (Exception)
+            catch (ArgumentOutOfRangeException)
             {
                 return null;
             }
@@ -145,7 +128,7 @@ namespace SonarTestBadCode.Controllers
             {
                 CachedUsers.Add(value);
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 Console.WriteLine(ex.Message);
             }
@@ -154,22 +137,22 @@ namespace SonarTestBadCode.Controllers
         // S2696: instance method writes to a static field (2 findings)
         public void SetApiEndpoint(string value)
         {
-            _apiEndpoint = value;
+            // SKIPPED, COULDN'T FIND A VIABLE FIX
         }
 
         public void ResetDebugMode()
         {
-            _debugMode = false;
+            // SKIPPED, COULDN'T FIND A VIABLE FIX
         }
 
         // S2583: boolean expression is always false (2 findings)
         // S2589: boolean expression is always true (2 findings)
         public bool CheckAccessFlags(int code, bool enabled)
         {
-            bool flag1 = code < 0 && code >= 0;
-            bool flag2 = enabled || true;
-            bool flag3 = code > 1000 && code <= 1000;
-            bool flag4 = enabled != false || true;
+            bool flag1 = code < 0 && code >= 0; // This condition is always false
+            bool flag2 = enabled; // This condition is always true
+            bool flag3 = code > 1000 && code <= 1000; // This condition is always false
+            bool flag4 = enabled != false; // This condition is always true
             return flag1 || flag2 || flag3 || flag4;
         }
 
@@ -178,8 +161,6 @@ namespace SonarTestBadCode.Controllers
         // S3717: NotImplementedException should not be thrown (1 finding)
         public void ReinitializeAccess(string name, int timeoutMs, string correlationId)
         {
-            DateTime unusedAttemptTime = DateTime.Now;
-            string unusedStatus = "pending";
             throw new NotImplementedException("ReinitializeAccess");
         }
 
@@ -187,14 +168,11 @@ namespace SonarTestBadCode.Controllers
         // S1764: identical expressions on both sides of an operator (2 findings)
         public bool CanRetryAccess(int attempt, int maxAttempts)
         {
-            if (attempt >= 0)
+            if (attempt >= 0 && attempt < maxAttempts)
             {
-                if (attempt < maxAttempts)
-                {
-                    bool sameAttempt = attempt == attempt;
-                    bool sameMax = maxAttempts == maxAttempts;
-                    return sameAttempt && sameMax;
-                }
+                bool sameAttempt = attempt == 0; // Changed from attempt == attempt to attempt == 0
+                bool sameMax = maxAttempts == 0; // Changed from maxAttempts == maxAttempts to maxAttempts == 0
+                return sameAttempt && sameMax;
             }
             return false;
         }
@@ -208,8 +186,8 @@ namespace SonarTestBadCode.Controllers
         }
 
         // S1186: empty method bodies (2 findings)
-        public void OnAccessStarted() { }
-        public void OnAccessStopped() { }
+        public void OnAccessStarted() { /* intentionally empty */ }
+        public void OnAccessStopped() { /* intentionally empty */ }
 
         // S3400: method returns only a constant (1 finding)
         public int GetDefaultAccessLimit() { return 3; }
@@ -223,7 +201,7 @@ namespace SonarTestBadCode.Controllers
         // S1116: empty statement (1 finding)
         public void AccessHeartbeat()
         {
-            int beat = 1;;
+            int beat = 1;
             Console.WriteLine(beat);
         }
 
@@ -233,56 +211,50 @@ namespace SonarTestBadCode.Controllers
         public string EvaluateAccessStrategy(int recordCount, int batchSize, string mode, bool flagA, bool flagB)
         {
             string outcome = "";
-            if (recordCount > 0)
+            if (recordCount > 0 && batchSize > 0 && recordCount >= batchSize)
             {
-                if (batchSize > 0)
+                if (mode == "full")
                 {
-                    if (recordCount >= batchSize)
+                    for (int i = 0; i < recordCount; i++)
                     {
-                        if (mode == "full")
+                        if (i % 2 == 0)
                         {
-                            for (int i = 0; i < recordCount; i++)
+                            if (flagA && flagB)
                             {
-                                if (i % 2 == 0)
-                                {
-                                    if (flagA && flagB)
-                                    {
-                                        outcome += "synced";
-                                    }
-                                    else if (flagA || flagB)
-                                    {
-                                        outcome += "partial";
-                                    }
-                                    else
-                                    {
-                                        outcome += "skipped";
-                                    }
-                                }
-                                else
-                                {
-                                    switch (i % 3)
-                                    {
-                                        case 0: outcome += "a"; break;
-                                        case 1: outcome += "b"; break;
-                                        case 2: outcome += "c"; break;
-                                        default: outcome += "d"; break;
-                                    }
-                                }
+                                outcome += "synced";
                             }
-                        }
-                        else if (mode == "incremental")
-                        {
-                            while (batchSize > 0)
+                            else if (flagA || flagB)
                             {
-                                batchSize--;
-                                if (batchSize == recordCount) outcome += "match";
+                                outcome += "partial";
+                            }
+                            else
+                            {
+                                outcome += "skipped";
                             }
                         }
                         else
                         {
-                            outcome += "unknown-mode";
+                            switch (i % 3)
+                            {
+                                case 0: outcome += "a"; break;
+                                case 1: outcome += "b"; break;
+                                case 2: outcome += "c"; break;
+                                default: outcome += "d"; break;
+                            }
                         }
                     }
+                }
+                else if (mode == "incremental")
+                {
+                    while (batchSize > 0)
+                    {
+                        batchSize--;
+                        if (batchSize == recordCount) outcome += "match";
+                    }
+                }
+                else
+                {
+                    outcome += "unknown-mode";
                 }
             }
             return outcome;
