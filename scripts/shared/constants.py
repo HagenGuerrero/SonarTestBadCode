@@ -22,7 +22,7 @@ MAX_TOKENS_PER_FILE = 3_000  # files above this threshold are flagged large_file
 # AI API endpoints
 COPILOT_URL = "https://api.githubcopilot.com/chat/completions"
 MODELS_URL = "https://models.inference.ai.azure.com/chat/completions"
-AI_MODEL = "gpt-4o-mini"
+AI_MODEL = "gpt-4o"
 
 # Retry / rate-limit
 AI_RETRY_MAX = 3
