@@ -10,11 +10,11 @@
     },
     {
       "key": "sonar.scanner.bootstrapStartTime",
-      "value": "1782836200000"
+      "value": "1782842621000"
     },
     {
       "key": "sonar.projectKey",
-      "value": "AUTOMATION-TEST"
+      "value": "sonar-test-bad-code"
     },
     {
       "key": "sonar.working.directory",
@@ -30,7 +30,7 @@
     },
     {
       "key": "sonar.sources",
-      "value": "C:\\repos\\SonarTestBadCode\\.vscode\\settings.json,C:\\repos\\SonarTestBadCode\\.github\\workflows\\sonar-batch.yml,C:\\repos\\SonarTestBadCode\\scripts\\shared\\constants.py,C:\\repos\\SonarTestBadCode\\scripts\\shared\\__init__.py,C:\\repos\\SonarTestBadCode\\scripts\\sonar\\batch_issues.py,C:\\repos\\SonarTestBadCode\\scripts\\sonar\\fetch_issues.py,C:\\repos\\SonarTestBadCode\\scripts\\sonar\\__init__.py"
+      "value": "C:\\repos\\SonarTestBadCode\\.vscode\\settings.json,C:\\repos\\SonarTestBadCode\\output\\batches.json,C:\\repos\\SonarTestBadCode\\output\\issues.json,C:\\repos\\SonarTestBadCode\\.github\\workflows\\sonar-batch.yml,C:\\repos\\SonarTestBadCode\\scripts\\shared\\constants.py,C:\\repos\\SonarTestBadCode\\scripts\\shared\\__init__.py,C:\\repos\\SonarTestBadCode\\scripts\\sonar\\batch_issues.py,C:\\repos\\SonarTestBadCode\\scripts\\sonar\\fetch_issues.py,C:\\repos\\SonarTestBadCode\\scripts\\sonar\\__init__.py"
     },
     {
       "key": "sonar.tests",
@@ -42,7 +42,7 @@
     },
     {
       "key": "8F2A1B3C-4D5E-6F7A-8B9C-0D1E2F3A4B5C.sonar.projectKey",
-      "value": "AUTOMATION-TEST:8F2A1B3C-4D5E-6F7A-8B9C-0D1E2F3A4B5C"
+      "value": "sonar-test-bad-code:8F2A1B3C-4D5E-6F7A-8B9C-0D1E2F3A4B5C"
     },
     {
       "key": "8F2A1B3C-4D5E-6F7A-8B9C-0D1E2F3A4B5C.sonar.projectName",
@@ -87,6 +87,10 @@
     {
       "key": "sonar.host.url",
       "value": "http://localhost:9000"
+    },
+    {
+      "key": "sonar.exclusions",
+      "value": "scripts/**,output/**"
     },
     {
       "key": "sonar.visualstudio.enable",
