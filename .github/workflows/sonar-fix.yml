@@ -23,6 +23,11 @@ on:
         description: 'Max issues per AI call — lower value reduces hallucination risk'
         required: false
         default: '15'
+      run_copilot_agent:
+        description: 'Fire Copilot Agent Tasks for skipped files (requires COPILOT_PAT)'
+        required: false
+        default: 'false'
+        type: boolean
 
 permissions:
   contents: write
@@ -243,7 +248,7 @@ jobs:
       # GITHUB_TOKEN is explicitly rejected by the Agent Tasks API (billing is
       # user-level). Skips gracefully when the secret is absent.
       - name: Create Copilot Agent Tasks for skipped files
-        if: steps.fix.outputs.exit_code != '3'
+        if: steps.fix.outputs.exit_code != '3' && inputs.run_copilot_agent == 'true'
         env:
           COPILOT_PAT: ${{ secrets.COPILOT_PAT }}
           GITHUB_REPOSITORY: ${{ github.repository }}
