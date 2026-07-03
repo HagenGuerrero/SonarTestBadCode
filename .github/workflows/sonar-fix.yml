@@ -28,6 +28,7 @@ permissions:
   contents: write
   pull-requests: write
   models: read
+  issues: write
 
 jobs:
   sonar-fix:
@@ -235,3 +236,17 @@ jobs:
           GITHUB_BASE_BRANCH: agent/fix
           FIX_EXIT_CODE: ${{ steps.fix.outputs.exit_code }}
         run: python scripts/git/create_pr.py
+
+      # Create Copilot Agent Tasks for any batches that fix_batch.py could not fix.
+      # Requires COPILOT_PAT secret: fine-grained PAT with actions:write,
+      # contents:write, issues:write, pull-requests:write.
+      # GITHUB_TOKEN is explicitly rejected by the Agent Tasks API (billing is
+      # user-level). Skips gracefully when the secret is absent.
+      - name: Create Copilot Agent Tasks for skipped files
+        if: steps.fix.outputs.exit_code != '3'
+        env:
+          COPILOT_PAT: ${{ secrets.COPILOT_PAT }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+          GITHUB_BASE_BRANCH: agent/fix
+        run: python scripts/ai/create_copilot_tasks.py
