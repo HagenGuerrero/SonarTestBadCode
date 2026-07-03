@@ -1,0 +1,9 @@
+{
+  "batch_id": 4,
+  "local_path": "SonarTestBadCode/Helpers/ValidationHelper.cs",
+  "status": "skipped",
+  "issues_total": 68,
+  "chunks_total": 5,
+  "chunks_succeeded": 0,
+  "fixes": []
+}
