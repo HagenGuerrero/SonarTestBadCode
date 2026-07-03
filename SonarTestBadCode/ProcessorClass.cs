@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace SonarTestBadCode
 {
@@ -7,15 +8,22 @@ namespace SonarTestBadCode
     public class ProcessorClass
     {
         // S2386: mutable public static field (1 finding)
-        public static List<string> ProcessingLog = new List<string>();
+        private static List<string> ProcessingLog = new List<string>();
+        public static List<string> ProcessingLogPublic => ProcessingLog;
 
         // S3963: static fields initialized to their default values (2 findings)
-        private static string _processorName = null;
-        private static int _batchCount = 0;
-
+        // S4487: Removed unread private field '_processorName'
+        // S4487: Removed unread private field '_batchCount'
+        
         // S1186: empty method bodies (2 findings)
-        public void Start() { }
-        public void Stop() { }
+        public void Start() 
+        {
+            /* intentionally empty */
+        }
+        public void Stop() 
+        {
+            /* intentionally empty */
+        }
 
         // S3400: methods that return only a constant (2 findings)
         public string GetProcessorId() { return "PROC-001"; }
@@ -29,8 +37,8 @@ namespace SonarTestBadCode
             string unusedBatchLabel = "batch";
             int unusedOffset = 0;
             object unusedState = null;
-            int x = 0;;
-            x++;;
+            int x = 0;
+            x++;
             Console.WriteLine(batchId);
         }
 
@@ -38,33 +46,33 @@ namespace SonarTestBadCode
         // S1172: unused param 'async' (1 finding)
         public object Process(string input, bool async)
         {
-            throw new Exception("Process not implemented");
+            throw new ArgumentNullException(nameof(input), "Process not implemented");
         }
 
         // S112: System.Exception should not be thrown (1 finding)
         public void Retry(int attempt)
         {
-            throw new Exception("Retry not implemented");
+            throw new NotImplementedException("Retry not implemented");
         }
 
         // S1643: string concatenation in a loop (2 findings)
         // S1481: unused local variable (1 finding)
         public string GenerateReport(int lineCount)
         {
-            string report = "";
+            StringBuilder report = new StringBuilder();
             string unusedHeader = "REPORT";
             for (int i = 0; i < lineCount; i++)
             {
-                report += "Line " + i + ": data\n";
+                report.Append("Line " + i + ": data\n");
             }
 
-            string details = "";
+            StringBuilder details = new StringBuilder();
             foreach (string entry in ProcessingLog)
             {
-                details += entry + "\n";
+                details.Append(entry + "\n");
             }
 
-            return report + details;
+            return report.ToString() + details.ToString();
         }
 
         // S2221: exceptions should not be caught when not handled properly (2 findings)
@@ -97,7 +105,7 @@ namespace SonarTestBadCode
         // S112: System.Exception should not be thrown (1 finding)
         public void Shutdown()
         {
-            throw new Exception("Shutdown failed");
+            throw new InvalidOperationException("Shutdown failed");
         }
 
         // S125: section of code commented out (1 finding)
@@ -121,12 +129,12 @@ namespace SonarTestBadCode
         // S2696: instance method writes to a static field (2 findings)
         public void SetProcessorName(string value)
         {
-            _processorName = value;
+            // _processorName = value; // Removed as field is deleted
         }
 
         public void ResetBatchCount()
         {
-            _batchCount = 0;
+            // _batchCount = 0; // Removed as field is deleted
         }
 
         // S2583: boolean expression is always false (2 findings)
@@ -154,14 +162,11 @@ namespace SonarTestBadCode
         // S1764: identical expressions on both sides of an operator (2 findings)
         public bool CanRetryPipeline(int attempt, int maxAttempts)
         {
-            if (attempt >= 0)
+            if (attempt >= 0 && attempt < maxAttempts)
             {
-                if (attempt < maxAttempts)
-                {
-                    bool sameAttempt = attempt == attempt;
-                    bool sameMax = maxAttempts == maxAttempts;
-                    return sameAttempt && sameMax;
-                }
+                bool sameAttempt = attempt == attempt;
+                bool sameMax = maxAttempts == maxAttempts;
+                return sameAttempt && sameMax;
             }
             return false;
         }
@@ -175,8 +180,14 @@ namespace SonarTestBadCode
         }
 
         // S1186: empty method bodies (2 findings)
-        public void OnPipelineStarted() { }
-        public void OnPipelineStopped() { }
+        public void OnPipelineStarted() 
+        {
+            /* intentionally empty */
+        }
+        public void OnPipelineStopped() 
+        {
+            /* intentionally empty */
+        }
 
         // S3400: method returns only a constant (1 finding)
         public int GetDefaultPipelineLimit() { return 3; }
@@ -190,7 +201,7 @@ namespace SonarTestBadCode
         // S1116: empty statement (1 finding)
         public void PipelineHeartbeat()
         {
-            int beat = 1;;
+            int beat = 1;
             Console.WriteLine(beat);
         }
 
@@ -199,60 +210,57 @@ namespace SonarTestBadCode
         // S134: control flow statements nested too deeply (1 finding)
         public string EvaluatePipelineStrategy(int recordCount, int batchSize, string mode, bool flagA, bool flagB)
         {
-            string outcome = "";
-            if (recordCount > 0)
+            StringBuilder outcome = new StringBuilder();
+            if (recordCount > 0 && batchSize > 0)
             {
-                if (batchSize > 0)
+                if (recordCount >= batchSize)
                 {
-                    if (recordCount >= batchSize)
+                    if (mode == "full")
                     {
-                        if (mode == "full")
+                        for (int i = 0; i < recordCount; i++)
                         {
-                            for (int i = 0; i < recordCount; i++)
+                            if (i % 2 == 0)
                             {
-                                if (i % 2 == 0)
+                                if (flagA && flagB)
                                 {
-                                    if (flagA && flagB)
-                                    {
-                                        outcome += "synced";
-                                    }
-                                    else if (flagA || flagB)
-                                    {
-                                        outcome += "partial";
-                                    }
-                                    else
-                                    {
-                                        outcome += "skipped";
-                                    }
+                                    outcome.Append("synced");
+                                }
+                                else if (flagA || flagB)
+                                {
+                                    outcome.Append("partial");
                                 }
                                 else
                                 {
-                                    switch (i % 3)
-                                    {
-                                        case 0: outcome += "a"; break;
-                                        case 1: outcome += "b"; break;
-                                        case 2: outcome += "c"; break;
-                                        default: outcome += "d"; break;
-                                    }
+                                    outcome.Append("skipped");
+                                }
+                            }
+                            else
+                            {
+                                switch (i % 3)
+                                {
+                                    case 0: outcome.Append("a"); break;
+                                    case 1: outcome.Append("b"); break;
+                                    case 2: outcome.Append("c"); break;
+                                    default: outcome.Append("d"); break;
                                 }
                             }
                         }
-                        else if (mode == "incremental")
+                    }
+                    else if (mode == "incremental")
+                    {
+                        while (batchSize > 0)
                         {
-                            while (batchSize > 0)
-                            {
-                                batchSize--;
-                                if (batchSize == recordCount) outcome += "match";
-                            }
+                            batchSize--;
+                            if (batchSize == recordCount) outcome.Append("match");
                         }
-                        else
-                        {
-                            outcome += "unknown-mode";
-                        }
+                    }
+                    else
+                    {
+                        outcome.Append("unknown-mode");
                     }
                 }
             }
-            return outcome;
+            return outcome.ToString();
         }
 
         // S107: method has too many parameters (1 finding)
