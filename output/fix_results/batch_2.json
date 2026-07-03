@@ -1,0 +1,9 @@
+{
+  "batch_id": 2,
+  "local_path": "SonarTestBadCode/Controllers/HomeController.cs",
+  "status": "skipped",
+  "issues_total": 78,
+  "chunks_total": 6,
+  "chunks_succeeded": 0,
+  "fixes": []
+}

@@ -1,0 +1,9 @@
+{
+  "batch_id": 1,
+  "local_path": "SonarTestBadCode/Repositories/UserRepository.cs",
+  "status": "skipped",
+  "issues_total": 83,
+  "chunks_total": 6,
+  "chunks_succeeded": 0,
+  "fixes": []
+}

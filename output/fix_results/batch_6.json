@@ -1,0 +1,9 @@
+{
+  "batch_id": 6,
+  "local_path": "SonarTestBadCode/Utilities/StringHelper.cs",
+  "status": "skipped",
+  "issues_total": 63,
+  "chunks_total": 5,
+  "chunks_succeeded": 0,
+  "fixes": []
+}

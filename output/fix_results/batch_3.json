@@ -1,0 +1,9 @@
+{
+  "batch_id": 3,
+  "local_path": "SonarTestBadCode/Services/DataService.cs",
+  "status": "skipped",
+  "issues_total": 76,
+  "chunks_total": 6,
+  "chunks_succeeded": 0,
+  "fixes": []
+}
