@@ -27,7 +27,6 @@ import re
 import subprocess
 import sys
 import time
-from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -36,7 +35,6 @@ from shared.constants import (
     AI_MODEL,
     AI_RETRY_MAX,
     BATCHES_FILE,
-    COMMIT_FULL_LIST_THRESHOLD,
     COPILOT_URL,
     EXIT_CODE_ALL_SKIPPED,
     EXIT_CODE_FATAL,
@@ -247,24 +245,7 @@ def build_commit_message(batch: dict, all_fixes: list[str]) -> str:
     n = batch["issue_count"]
     bid = batch["batch_id"]
     subject = f"fix(sonar): {n} issues in {fname} [batch-{bid}, run-{_RUN_ID}]"
-
-    if len(all_fixes) <= COMMIT_FULL_LIST_THRESHOLD:
-        body = "\n".join(all_fixes)
-    else:
-        rule_counts = Counter(
-            ln.split(":")[0] for ln in all_fixes if ln and ":" in ln
-        )
-        top5 = rule_counts.most_common(5)
-        top_str = ", ".join(f"{r} ×{c}" for r, c in top5)
-        remaining = len(rule_counts) - len(top5)
-        if remaining > 0:
-            top_str += f", +{remaining} more rule(s)"
-        skipped = sum(1 for ln in all_fixes if "SKIPPED" in ln)
-        body = f"Rules: {top_str}"
-        if skipped:
-            body += f"\nSkipped: {skipped} issue(s) — ambiguous or risky, left unchanged"
-        body += f"\nFull log: output/fix_results/batch_{bid}.json"
-
+    body = "\n".join(all_fixes) if all_fixes else "(no fix details returned)"
     return f"{subject}\n\n{body}"
 
 

@@ -160,13 +160,11 @@ def main() -> int:
     fix_branch = f"ai/sonarqube-fixes-{_RUN_NUMBER}"
     results = _load_fix_results()
 
-    # Stage batch output files
+    # Stage batch output files (fix_results/ stays on disk for PR body but is not committed)
     stage_targets = []
     for path in [ISSUES_FILE, BATCHES_FILE]:
         if os.path.isfile(path):
             stage_targets.append(path)
-    if os.path.isdir(FIX_RESULTS_DIR):
-        stage_targets.append(FIX_RESULTS_DIR + "/")
 
     if stage_targets:
         _run(["git", "add", "-f"] + stage_targets)
