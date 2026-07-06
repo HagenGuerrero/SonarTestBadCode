@@ -1,0 +1,250 @@
+name: SonarQube — Build & Scan Verify
+
+on:
+  pull_request:
+    branches:
+      - agent/fix
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  verify:
+    # Only run for PRs created by the AI fix workflow
+    if: startsWith(github.head_ref, 'ai/sonarqube-fixes-')
+    runs-on: ubuntu-latest
+
+    services:
+      sonarqube:
+        image: sonarqube:lts-community
+        ports:
+          - 9000:9000
+
+    steps:
+      # -----------------------------------------------------------------------
+      # Toolchain setup
+      # -----------------------------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Java 17 (required by SonarScanner backend)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Install dotnet-sonarscanner
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Install Python dependencies
+        run: pip install requests
+
+      - name: Install Mono MSBuild (official Mono Project repo — Ubuntu apt lacks mono-msbuild)
+        run: |
+          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 \
+            --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+          echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" \
+            | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+          sudo apt-get update -qq
+          sudo apt-get install -y mono-devel
+
+      # -----------------------------------------------------------------------
+      # Bootstrap — wait for SonarQube, generate token, create project
+      # -----------------------------------------------------------------------
+      - name: Wait for SonarQube to be fully UP
+        run: |
+          echo "Polling SonarQube status endpoint..."
+          STATUS=""
+          for i in $(seq 1 30); do
+            STATUS=$(curl -sf http://localhost:9000/api/system/status \
+              | python3 -c "import json,sys; print(json.load(sys.stdin).get('status',''))" 2>/dev/null || echo "")
+            echo "  attempt $i: '$STATUS'"
+            if [ "$STATUS" = "UP" ]; then
+              echo "SonarQube is UP"
+              break
+            fi
+            sleep 10
+          done
+          if [ "$STATUS" != "UP" ]; then
+            echo "SonarQube never became UP after 30 attempts"
+            exit 1
+          fi
+
+      - name: Bootstrap — generate token and create project
+        run: |
+          TOKEN_JSON=$(curl -sf -X POST -u "admin:admin" \
+            "http://localhost:9000/api/user_tokens/generate" \
+            -d "name=ci-token-${{ github.run_number }}")
+          TOKEN=$(echo "$TOKEN_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)['token'])")
+
+          curl -s -X POST -u "admin:admin" \
+            "http://localhost:9000/api/projects/create" \
+            -d "project=sonar-test-bad-code&name=SonarTestBadCode" > /dev/null || true
+
+          echo "SONARQUBE_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          echo "Bootstrap complete — token and project ready"
+
+      - name: Import quality profile
+        run: |
+          sed 's|<name>Sonar way</name>|<name>CI-Profile-cs</name>|' \
+            sonar/quality-profile-cs.xml > /tmp/ci-profile-cs.xml
+
+          curl -sf -X POST -u "admin:admin" \
+            "http://localhost:9000/api/qualityprofiles/restore" \
+            -F "backup=@/tmp/ci-profile-cs.xml"
+
+          curl -sf -X POST -u "admin:admin" \
+            "http://localhost:9000/api/qualityprofiles/set_default" \
+            --data-urlencode "language=cs" \
+            --data-urlencode "qualityProfile=CI-Profile-cs"
+
+          echo "Quality profile 'CI-Profile-cs' imported and set as default for C#"
+
+      # -----------------------------------------------------------------------
+      # Build + SonarQube scan
+      # -----------------------------------------------------------------------
+      - name: SonarScanner begin
+        run: |
+          dotnet sonarscanner begin \
+            /k:"sonar-test-bad-code" \
+            /d:sonar.host.url="http://localhost:9000" \
+            /d:sonar.login="$SONARQUBE_TOKEN" \
+            /d:sonar.exclusions="scripts/**,output/**"
+
+      - name: Build (.NET Framework 4.8 via Mono MSBuild)
+        env:
+          FrameworkPathOverride: /usr/lib/mono/4.8-api/
+        run: dotnet msbuild SonarTestBadCode.sln /p:Configuration=Release
+
+      - name: SonarScanner end
+        run: dotnet sonarscanner end /d:sonar.login="$SONARQUBE_TOKEN"
+
+      - name: Wait for SonarQube CE task to complete
+        run: |
+          CE_TASK_URL=$(python3 - << 'PYEOF'
+          props = {}
+          with open('.sonarqube/out/.sonar/report-task.txt') as f:
+              for line in f:
+                  line = line.strip()
+                  if '=' in line and not line.startswith('#'):
+                      k, v = line.split('=', 1)
+                      props[k] = v.replace('\\:', ':').replace('\\=', '=').replace('\\/', '/')
+          print(props.get('ceTaskUrl', ''))
+          PYEOF
+          )
+
+          echo "Polling CE task: $CE_TASK_URL"
+          STATUS=""
+          for i in $(seq 1 36); do
+            STATUS=$(curl -sf -u "$SONARQUBE_TOKEN:" "$CE_TASK_URL" \
+              | python3 -c "import json,sys; print(json.load(sys.stdin)['task']['status'])")
+            echo "  attempt $i: $STATUS"
+            if [ "$STATUS" = "SUCCESS" ]; then break; fi
+            if [ "$STATUS" = "FAILED" ]; then echo "CE task FAILED"; exit 1; fi
+            sleep 5
+          done
+          if [ "$STATUS" != "SUCCESS" ]; then
+            echo "CE task timed out after 36 attempts"
+            exit 1
+          fi
+
+      # -----------------------------------------------------------------------
+      # Report issue count to step summary and PR comment
+      # -----------------------------------------------------------------------
+      - name: Fetch issue summary
+        id: summary
+        run: |
+          python3 - << 'PYEOF'
+          import json, os, urllib.request, urllib.parse
+
+          token = os.environ["SONARQUBE_TOKEN"]
+          base  = "http://localhost:9000"
+
+          def get(path):
+              req = urllib.request.Request(f"{base}{path}")
+              import base64
+              creds = base64.b64encode(f"{token}:".encode()).decode()
+              req.add_header("Authorization", f"Basic {creds}")
+              with urllib.request.urlopen(req) as r:
+                  return json.load(r)
+
+          # Total open issues
+          data = get("/api/issues/search?projectKeys=sonar-test-bad-code&statuses=OPEN&ps=1")
+          total = data["paging"]["total"]
+
+          # By severity
+          counts = {}
+          for sev in ["BLOCKER", "CRITICAL", "MAJOR", "MINOR", "INFO"]:
+              d = get(f"/api/issues/search?projectKeys=sonar-test-bad-code&statuses=OPEN&severities={sev}&ps=1")
+              counts[sev] = d["paging"]["total"]
+
+          # Write step summary
+          summary = f"""## SonarQube Scan Results
+
+          | Severity | Count |
+          |----------|-------|
+          | BLOCKER  | {counts['BLOCKER']} |
+          | CRITICAL | {counts['CRITICAL']} |
+          | MAJOR    | {counts['MAJOR']} |
+          | MINOR    | {counts['MINOR']} |
+          | INFO     | {counts['INFO']} |
+          | **Total** | **{total}** |
+          """
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write(summary)
+
+          # Export for PR comment step
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"total={total}\n")
+              for sev, count in counts.items():
+                  f.write(f"{sev.lower()}={count}\n")
+
+          print(f"Total open issues: {total}")
+          PYEOF
+        env:
+          SONARQUBE_TOKEN: ${{ env.SONARQUBE_TOKEN }}
+
+      - name: Post scan results as PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const total    = '${{ steps.summary.outputs.total }}';
+            const blocker  = '${{ steps.summary.outputs.blocker }}';
+            const critical = '${{ steps.summary.outputs.critical }}';
+            const major    = '${{ steps.summary.outputs.major }}';
+            const minor    = '${{ steps.summary.outputs.minor }}';
+            const info     = '${{ steps.summary.outputs.info }}';
+
+            const body = [
+              '## SonarQube Scan Results',
+              '',
+              '| Severity | Count |',
+              '|----------|-------|',
+              `| BLOCKER  | ${blocker} |`,
+              `| CRITICAL | ${critical} |`,
+              `| MAJOR    | ${major} |`,
+              `| MINOR    | ${minor} |`,
+              `| INFO     | ${info} |`,
+              `| **Total** | **${total}** |`,
+              '',
+              `> Run [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`,
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
