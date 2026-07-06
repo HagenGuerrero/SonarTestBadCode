@@ -190,6 +190,11 @@ def call_ai(content: str, file_path: str, issues: list[dict]) -> tuple[str | Non
     """
     global _copilot_available
 
+    # Scale max_tokens to the file size — output is roughly the same length as input.
+    # Cap at 16384 (GitHub Models gpt-4o limit). Floor at 4096 for small files.
+    estimated_output_tokens = (len(content) // 4) + 1024
+    max_tokens = min(max(4096, estimated_output_tokens), 16384)
+
     payload = {
         "model": AI_MODEL,
         "messages": [
@@ -197,7 +202,7 @@ def call_ai(content: str, file_path: str, issues: list[dict]) -> tuple[str | Non
             {"role": "user", "content": _build_user_prompt(file_path, content, issues)},
         ],
         "temperature": 0.2,
-        "max_tokens": 4096,
+        "max_tokens": max_tokens,
     }
 
     last_error: str = "all attempts exhausted"
@@ -251,23 +256,34 @@ def call_ai(content: str, file_path: str, issues: list[dict]) -> tuple[str | Non
 # ---------------------------------------------------------------------------
 
 def parse_response(text: str) -> tuple[str | None, list[str]]:
-    """Return (code, fixes) extracted from the structured AI response."""
+    """Return (code, fixes) extracted from the structured AI response.
+
+    Primary: expects <CODE>...</CODE> tags as instructed in the system prompt.
+    Fallback 1: strips markdown fences (```csharp ... ```) if present.
+    Fallback 2: treats the entire response as raw code.
+    Validation downstream will reject anything that isn't valid C#.
+    """
     code_start = text.find("<CODE>")
     code_end = text.find("</CODE>")
     fixes_start = text.find("<FIXES>")
     fixes_end = text.find("</FIXES>")
 
-    if code_start == -1 or code_end == -1:
-        return None, []
-
-    code = text[code_start + len("<CODE>"):code_end].strip()
+    if code_start != -1 and code_end != -1:
+        code = text[code_start + len("<CODE>"):code_end].strip()
+    else:
+        stripped = text.strip()
+        fence_match = re.match(r"^```[^\n]*\n(.*?)```\s*$", stripped, re.DOTALL)
+        if fence_match:
+            code = fence_match.group(1).strip()
+        else:
+            code = stripped
 
     fixes: list[str] = []
     if fixes_start != -1 and fixes_end != -1:
         raw = text[fixes_start + len("<FIXES>"):fixes_end].strip()
         fixes = [ln.strip() for ln in raw.splitlines() if ln.strip()]
 
-    return code, fixes
+    return code if code else None, fixes
 
 
 # ---------------------------------------------------------------------------
@@ -414,7 +430,7 @@ def main() -> int:
         file_tokens: dict = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
 
         for chunk_idx, chunk in enumerate(chunks):
-            print(f"  chunk {chunk_idx + 1}/{total_chunks}: {len(chunk)} issues")
+            print(f"  chunk {chunk_idx + 1}/{total_chunks}: {len(chunk)} issues | ~{len(current_content)//4} file tokens")
 
             raw, api_err, usage = call_ai(current_content, local_path, chunk)
             if raw is None:
