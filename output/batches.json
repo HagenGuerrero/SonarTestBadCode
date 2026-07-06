@@ -1,7 +1,7 @@
 {
   "total_files_with_issues": 7,
   "total_batches": 7,
-  "total_issues": 255,
+  "total_issues": 233,
   "skipped_not_found": 0,
   "severity_distribution": {
     "BLOCKER": 1,
@@ -22,7 +22,7 @@
       "file_size_bytes": 3683,
       "large_file": false,
       "max_severity": "BLOCKER",
-      "issue_count": 28,
+      "issue_count": 26,
       "rules_present": [
         "csharpsquid:S1104",
         "csharpsquid:S1116",
@@ -34,7 +34,6 @@
         "csharpsquid:S1481",
         "csharpsquid:S1643",
         "csharpsquid:S1854",
-        "csharpsquid:S2221",
         "csharpsquid:S2223",
         "csharpsquid:S2306",
         "csharpsquid:S2386",
@@ -183,20 +182,6 @@
           "type": "CODE_SMELL"
         },
         {
-          "line": 79,
-          "rule": "csharpsquid:S2221",
-          "severity": "MAJOR",
-          "message": "Catch a list of specific exception subtype or use exception filters instead.",
-          "type": "CODE_SMELL"
-        },
-        {
-          "line": 91,
-          "rule": "csharpsquid:S2221",
-          "severity": "MAJOR",
-          "message": "Catch a list of specific exception subtype or use exception filters instead.",
-          "type": "CODE_SMELL"
-        },
-        {
           "line": 10,
           "rule": "csharpsquid:S2223",
           "severity": "CRITICAL",
@@ -249,7 +234,7 @@
       "file_size_bytes": 6667,
       "large_file": false,
       "max_severity": "CRITICAL",
-      "issue_count": 48,
+      "issue_count": 43,
       "rules_present": [
         "csharpsquid:S1066",
         "csharpsquid:S1104",
@@ -262,13 +247,11 @@
         "csharpsquid:S1481",
         "csharpsquid:S1643",
         "csharpsquid:S1764",
-        "csharpsquid:S2221",
         "csharpsquid:S2223",
         "csharpsquid:S2386",
         "csharpsquid:S2589",
         "csharpsquid:S2933",
         "csharpsquid:S3400",
-        "csharpsquid:S3717",
         "csharpsquid:S3923"
       ],
       "issues": [
@@ -483,20 +466,6 @@
           "type": "BUG"
         },
         {
-          "line": 104,
-          "rule": "csharpsquid:S2221",
-          "severity": "MAJOR",
-          "message": "Catch a list of specific exception subtype or use exception filters instead.",
-          "type": "CODE_SMELL"
-        },
-        {
-          "line": 117,
-          "rule": "csharpsquid:S2221",
-          "severity": "MAJOR",
-          "message": "Catch a list of specific exception subtype or use exception filters instead.",
-          "type": "CODE_SMELL"
-        },
-        {
           "line": 10,
           "rule": "csharpsquid:S2223",
           "severity": "CRITICAL",
@@ -581,27 +550,6 @@
           "type": "CODE_SMELL"
         },
         {
-          "line": 47,
-          "rule": "csharpsquid:S3717",
-          "severity": "MAJOR",
-          "message": "Implement this method or throw 'NotSupportedException' instead.",
-          "type": "CODE_SMELL"
-        },
-        {
-          "line": 54,
-          "rule": "csharpsquid:S3717",
-          "severity": "MAJOR",
-          "message": "Implement this method or throw 'NotSupportedException' instead.",
-          "type": "CODE_SMELL"
-        },
-        {
-          "line": 60,
-          "rule": "csharpsquid:S3717",
-          "severity": "MAJOR",
-          "message": "Implement this method or throw 'NotSupportedException' instead.",
-          "type": "CODE_SMELL"
-        },
-        {
           "line": 139,
           "rule": "csharpsquid:S3923",
           "severity": "MAJOR",
@@ -619,7 +567,7 @@
       "file_size_bytes": 4834,
       "large_file": false,
       "max_severity": "CRITICAL",
-      "issue_count": 43,
+      "issue_count": 40,
       "rules_present": [
         "csharpsquid:S1066",
         "csharpsquid:S1104",
@@ -627,11 +575,9 @@
         "csharpsquid:S1125",
         "csharpsquid:S1144",
         "csharpsquid:S1186",
-        "csharpsquid:S1192",
         "csharpsquid:S125",
         "csharpsquid:S1481",
         "csharpsquid:S1764",
-        "csharpsquid:S2221",
         "csharpsquid:S2223",
         "csharpsquid:S2386",
         "csharpsquid:S2589",
@@ -753,13 +699,6 @@
           "type": "CODE_SMELL"
         },
         {
-          "line": 30,
-          "rule": "csharpsquid:S1192",
-          "severity": "MINOR",
-          "message": "Define a constant instead of using this literal 'controller_error' 6 times.",
-          "type": "CODE_SMELL"
-        },
-        {
           "line": 99,
           "rule": "csharpsquid:S125",
           "severity": "MAJOR",
@@ -828,20 +767,6 @@
           "severity": "MAJOR",
           "message": "Correct one of the identical expressions on both sides of operator '=='.",
           "type": "BUG"
-        },
-        {
-          "line": 136,
-          "rule": "csharpsquid:S2221",
-          "severity": "MAJOR",
-          "message": "Catch a list of specific exception subtype or use exception filters instead.",
-          "type": "CODE_SMELL"
-        },
-        {
-          "line": 148,
-          "rule": "csharpsquid:S2221",
-          "severity": "MAJOR",
-          "message": "Catch a list of specific exception subtype or use exception filters instead.",
-          "type": "CODE_SMELL"
         },
         {
           "line": 11,
@@ -952,18 +877,16 @@
       "file_size_bytes": 6440,
       "large_file": false,
       "max_severity": "CRITICAL",
-      "issue_count": 41,
+      "issue_count": 35,
       "rules_present": [
         "csharpsquid:S1066",
         "csharpsquid:S1104",
         "csharpsquid:S112",
         "csharpsquid:S1144",
         "csharpsquid:S1186",
-        "csharpsquid:S1192",
         "csharpsquid:S125",
         "csharpsquid:S1481",
         "csharpsquid:S1643",
-        "csharpsquid:S2221",
         "csharpsquid:S2223",
         "csharpsquid:S2386",
         "csharpsquid:S2583",
@@ -971,7 +894,6 @@
         "csharpsquid:S2696",
         "csharpsquid:S2933",
         "csharpsquid:S3400",
-        "csharpsquid:S3717",
         "csharpsquid:S3923",
         "csharpsquid:S4487"
       ],
@@ -1054,13 +976,6 @@
           "type": "CODE_SMELL"
         },
         {
-          "line": 149,
-          "rule": "csharpsquid:S1192",
-          "severity": "MINOR",
-          "message": "Define a constant instead of using this literal 'service_error' 5 times.",
-          "type": "CODE_SMELL"
-        },
-        {
           "line": 190,
           "rule": "csharpsquid:S125",
           "severity": "MAJOR",
@@ -1138,20 +1053,6 @@
           "type": "CODE_SMELL"
         },
         {
-          "line": 122,
-          "rule": "csharpsquid:S2221",
-          "severity": "MAJOR",
-          "message": "Catch a list of specific exception subtype or use exception filters instead.",
-          "type": "CODE_SMELL"
-        },
-        {
-          "line": 135,
-          "rule": "csharpsquid:S2221",
-          "severity": "MAJOR",
-          "message": "Catch a list of specific exception subtype or use exception filters instead.",
-          "type": "CODE_SMELL"
-        },
-        {
           "line": 11,
           "rule": "csharpsquid:S2223",
           "severity": "CRITICAL",
@@ -1222,27 +1123,6 @@
           "type": "CODE_SMELL"
         },
         {
-          "line": 79,
-          "rule": "csharpsquid:S3717",
-          "severity": "MAJOR",
-          "message": "Implement this method or throw 'NotSupportedException' instead.",
-          "type": "CODE_SMELL"
-        },
-        {
-          "line": 86,
-          "rule": "csharpsquid:S3717",
-          "severity": "MAJOR",
-          "message": "Implement this method or throw 'NotSupportedException' instead.",
-          "type": "CODE_SMELL"
-        },
-        {
-          "line": 93,
-          "rule": "csharpsquid:S3717",
-          "severity": "MAJOR",
-          "message": "Implement this method or throw 'NotSupportedException' instead.",
-          "type": "CODE_SMELL"
-        },
-        {
           "line": 163,
           "rule": "csharpsquid:S3923",
           "severity": "MAJOR",
@@ -1274,7 +1154,7 @@
       "file_size_bytes": 5647,
       "large_file": false,
       "max_severity": "CRITICAL",
-      "issue_count": 33,
+      "issue_count": 31,
       "rules_present": [
         "csharpsquid:S1066",
         "csharpsquid:S1104",
@@ -1283,11 +1163,9 @@
         "csharpsquid:S1125",
         "csharpsquid:S1144",
         "csharpsquid:S1186",
-        "csharpsquid:S1192",
         "csharpsquid:S125",
         "csharpsquid:S1481",
         "csharpsquid:S1764",
-        "csharpsquid:S2221",
         "csharpsquid:S2223",
         "csharpsquid:S2386",
         "csharpsquid:S2589",
@@ -1402,13 +1280,6 @@
           "type": "CODE_SMELL"
         },
         {
-          "line": 71,
-          "rule": "csharpsquid:S1192",
-          "severity": "MINOR",
-          "message": "Define a constant instead of using this literal 'validation_failed' 6 times.",
-          "type": "CODE_SMELL"
-        },
-        {
           "line": 131,
           "rule": "csharpsquid:S125",
           "severity": "MAJOR",
@@ -1472,13 +1343,6 @@
           "type": "BUG"
         },
         {
-          "line": 146,
-          "rule": "csharpsquid:S2221",
-          "severity": "MAJOR",
-          "message": "Catch a list of specific exception subtype or use exception filters instead.",
-          "type": "CODE_SMELL"
-        },
-        {
           "line": 11,
           "rule": "csharpsquid:S2223",
           "severity": "CRITICAL",
@@ -1538,7 +1402,7 @@
       "file_size_bytes": 5070,
       "large_file": false,
       "max_severity": "CRITICAL",
-      "issue_count": 32,
+      "issue_count": 29,
       "rules_present": [
         "csharpsquid:S1066",
         "csharpsquid:S1104",
@@ -1550,12 +1414,10 @@
         "csharpsquid:S1481",
         "csharpsquid:S1643",
         "csharpsquid:S1764",
-        "csharpsquid:S2221",
         "csharpsquid:S2223",
         "csharpsquid:S2386",
         "csharpsquid:S2933",
         "csharpsquid:S3400",
-        "csharpsquid:S3717",
         "csharpsquid:S3923"
       ],
       "issues": [
@@ -1714,13 +1576,6 @@
           "type": "BUG"
         },
         {
-          "line": 126,
-          "rule": "csharpsquid:S2221",
-          "severity": "MAJOR",
-          "message": "Catch a list of specific exception subtype or use exception filters instead.",
-          "type": "CODE_SMELL"
-        },
-        {
           "line": 11,
           "rule": "csharpsquid:S2223",
           "severity": "CRITICAL",
@@ -1763,20 +1618,6 @@
           "type": "CODE_SMELL"
         },
         {
-          "line": 52,
-          "rule": "csharpsquid:S3717",
-          "severity": "MAJOR",
-          "message": "Implement this method or throw 'NotSupportedException' instead.",
-          "type": "CODE_SMELL"
-        },
-        {
-          "line": 59,
-          "rule": "csharpsquid:S3717",
-          "severity": "MAJOR",
-          "message": "Implement this method or throw 'NotSupportedException' instead.",
-          "type": "CODE_SMELL"
-        },
-        {
           "line": 66,
           "rule": "csharpsquid:S3923",
           "severity": "MAJOR",
@@ -1794,7 +1635,7 @@
       "file_size_bytes": 5772,
       "large_file": false,
       "max_severity": "CRITICAL",
-      "issue_count": 30,
+      "issue_count": 29,
       "rules_present": [
         "csharpsquid:S1066",
         "csharpsquid:S1116",
@@ -1802,7 +1643,6 @@
         "csharpsquid:S112",
         "csharpsquid:S1125",
         "csharpsquid:S1186",
-        "csharpsquid:S1192",
         "csharpsquid:S125",
         "csharpsquid:S1481",
         "csharpsquid:S1643",
@@ -1874,13 +1714,6 @@
           "rule": "csharpsquid:S1186",
           "severity": "CRITICAL",
           "message": "Add a nested comment explaining why this method is empty, throw a 'NotSupportedException' or complete the implementation.",
-          "type": "CODE_SMELL"
-        },
-        {
-          "line": 58,
-          "rule": "csharpsquid:S1192",
-          "severity": "MINOR",
-          "message": "Define a constant instead of using this literal 'string_default' 6 times.",
           "type": "CODE_SMELL"
         },
         {

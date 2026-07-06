@@ -2,16 +2,13 @@
 
 A .NET Framework 4.8 class library intentionally written with code quality violations. It serves as the SonarQube scan target for an AI auto-fix GitHub Actions workflow — the violations are input data, not bugs.
 
-**Do not fix the violations manually.** They are the fixture data the workflow operates on.
-
 ---
 
 ## Purpose
 
-Produces a predictable set of ~400 SonarQube findings across 7 files. Two GitHub Actions workflows operate on this project:
+The project produces a predictable set of ~270 SonarQube findings across 7 files. A GitHub Actions workflow (described in `plan.md`) fetches those findings, batches them by file, sends each batch to an AI API for remediation, and opens a PR with the fixes.
 
-- **`sonar-batch.yml`** (`agent/batching` branch) — scans, fetches findings, batches by file, opens a review PR with the raw output.
-- **`sonar-fix.yml`** (`agent/fix` branch) — full pipeline: scan → batch → AI fix loop → PR with all fixes committed.
+**Do not fix the violations manually.** They are the fixture data the workflow operates on.
 
 ---
 
@@ -20,90 +17,24 @@ Produces a predictable set of ~400 SonarQube findings across 7 files. Two GitHub
 ```
 SonarTestBadCode.sln
 SonarTestBadCode/
-  Controllers/HomeController.cs      (~68 findings)
-  Services/DataService.cs            (~74 findings)
-  Models/UserModel.cs                (~70 findings)
-  Utilities/StringHelper.cs          (~63 findings)
-  Repositories/UserRepository.cs     (~79 findings)
-  Helpers/ValidationHelper.cs        (~70 findings)
-  ProcessorClass.cs                  (~57 findings)
+  Controllers/HomeController.cs      (~39 findings)
+  Services/DataService.cs            (~44 findings)
+  Models/UserModel.cs                (~39 findings)
+  Utilities/StringHelper.cs          (~35 findings)
+  Repositories/UserRepository.cs     (~48 findings)
+  Helpers/ValidationHelper.cs        (~40 findings)
+  ProcessorClass.cs                  (~27 findings)
 scripts/
-  shared/constants.py                shared config and exit codes
+  shared/constants.py                shared config (no magic strings)
   sonar/fetch_issues.py              SonarQube REST API paginator
-  sonar/batch_issues.py              groups issues into per-file batches
-  ai/fix_batch.py                    AI fix loop — calls API, writes fixes, commits
-  ai/prompts/system_prompt.md        behavioral rules and output format for the AI
-  ai/prompts/agent.md                per-rule fix strategies and guardrails
-  ai/create_copilot_tasks.py         fires Copilot Agent Tasks for skipped files
-  git/create_pr.py                   pushes fix branch, opens aggregated PR
-sonar/
-  quality-profile-cs.xml             SonarQube quality profile with all 28 rules
+  sonar/batch_issues.py              groups issues into batches
+  ai/fix_batch.py                    calls AI API, writes fixes, commits
+  git/create_pr.py                   pushes branch, opens PR
 ```
 
 ---
 
-## Workflows
-
-### `sonar-batch.yml` — Scan & Batch
-
-Triggered manually from the `agent/batching` branch.
-
-| Input | Default | Description |
-|-------|---------|-------------|
-| `project_keys` | `sonar-test-bad-code` | SonarQube project key(s), comma-separated |
-| `severity_blocker` | `true` | Include BLOCKER issues |
-| `severity_critical` | `true` | Include CRITICAL issues |
-| `severity_major` | `true` | Include MAJOR issues |
-| `severity_minor` | `true` | Include MINOR issues |
-| `severity_info` | `true` | Include INFO issues |
-| `language_filter` | `cs` | SonarQube language key |
-| `max_files` | `0` | Max files to batch (0 = unlimited) |
-
-**Output:** `output/issues.json` + `output/batches.json` committed to a `sonar/batch-output-N` branch with a PR targeting `agent/batching`.
-
----
-
-### `sonar-fix.yml` — Scan, Batch & AI Auto-Fix
-
-Triggered manually from the `agent/fix` branch.
-
-Includes all inputs from `sonar-batch.yml` plus:
-
-| Input | Default | Description |
-|-------|---------|-------------|
-| `max_issues_per_call` | `15` | Max issues per AI API call (sub-batching) |
-| `run_copilot_agent` | `false` | Fire Copilot Agent Tasks for skipped files |
-
-**Output:** Source files fixed in-place, one git commit per file with full fix log in the commit message. An aggregated PR targeting `agent/fix` includes a summary table (fixed/skipped files, token usage).
-
-#### Required secrets
-
-| Secret | Required | Description |
-|--------|----------|-------------|
-| `GITHUB_TOKEN` | Auto | Built-in Actions token — GitHub Models fallback |
-| `COPILOT_TOKEN` | Recommended | Classic PAT with `copilot` scope — unlocks full GPT-4o context (128k) via `api.githubcopilot.com` |
-| `COPILOT_PAT` | Optional | Classic PAT with `repo` + `workflow` scopes (Copilot-enabled account) — required for the Copilot Agent Tasks step |
-
-#### Provider chain
-
-`fix_batch.py` tries providers in order, falling back on failure:
-
-```
-GitHub Copilot API  →  GitHub Models (gpt-4o-mini, free tier)
-(COPILOT_TOKEN)         (GITHUB_TOKEN, 8k token cap)
-```
-
-#### Sub-batching
-
-Files with more issues than `max_issues_per_call` are split into sequential chunks. Each chunk reads the already-modified file so line numbers stay accurate across chunks.
-
-#### Copilot Agent Tasks (optional)
-
-When `run_copilot_agent` is enabled, files that the AI fix loop marks as `skipped` are sent to the GitHub Copilot coding agent via the Agent Tasks REST API (`POST /agents/repos/{owner}/{repo}/tasks`). Each task targets `agent/fix` as its base branch and opens its own draft PR. Requires `COPILOT_PAT` and Copilot coding agent enabled for the repo.
-
----
-
-## SonarQube rules violated (28 rules)
+## SonarQube rules violated
 
 | Rule | Description |
 |------|-------------|
@@ -128,34 +59,25 @@ When `run_copilot_agent` is enabled, files that the AI fix loop marks as `skippe
 | S3400 | Method returns only a constant |
 | S3717 | `NotImplementedException` thrown |
 | S3963 | Static field initialized to its default value |
-| S107 | Too many parameters |
-| S134 | Control flow nested too deeply |
-| S138 | Method has too many lines |
-| S1541 | Cyclomatic complexity too high |
-| S3358 | Nested ternary operators |
-| S3776 | Cognitive complexity too high |
-| S4144 | Two methods with identical implementations |
-
-Rules S107, S134, S138, S1541, S3358, S3776, and S4144 are intentionally present to exercise the AI's hallucination-mitigation path — they require structural reasoning and are skipped by the fix loop, falling through to the Copilot Agent Tasks step.
 
 ---
 
 ## SonarQube version
 
-Targets **SonarQube 9.9.x LTS**.
+This project targets **SonarQube 9.9.x LTS**. Key 9.9.x compatibility rules:
 
 | Do | Don't |
 |----|-------|
-| `/d:sonar.login="TOKEN"` | `/d:sonar.token="TOKEN"` — 10.x syntax |
+| `/d:sonar.login="TOKEN"` | `/d:sonar.token="TOKEN"` — 10.x syntax, fails on 9.9.x |
 | `projectKeys=KEY` in REST API | `componentKeys=KEY` — returns incomplete results on 9.9.x |
-| `auth=(token, "")` in Python requests | No other auth formats needed |
+| `pip install requests` and `auth=(token, "")` | No other auth formats needed |
 
 ---
 
 ## Prerequisites
 
 - .NET Framework 4.8 SDK / MSBuild
-- Python 3.12+ with `requests`
+- Python 3.12+ with `requests` (`pip install requests`)
 - Docker Desktop (for local SonarQube 9.9.x)
 - `dotnet-sonarscanner` global tool
 
@@ -191,6 +113,8 @@ Open http://localhost:9000 — login: `admin` / `Admin1234!`
 curl.exe -u admin:Admin1234! -X POST "http://localhost:9000/api/user_tokens/generate" -d "name=test-token"
 ```
 
+Copy the `token` value from the response.
+
 ### 3. Create the project (first time only)
 
 ```powershell
@@ -210,9 +134,9 @@ dotnet sonarscanner end /d:sonar.login="YOUR-TOKEN"
 
 ---
 
-## Running the scripts locally
+## Running the batching scripts
 
-### Fetch issues
+### Fetch issues from SonarQube
 
 ```powershell
 $env:SONARQUBE_URL      = "http://localhost:9000"
@@ -222,35 +146,51 @@ $env:SONAR_SEVERITIES   = "BLOCKER,CRITICAL,MAJOR,MINOR,INFO"
 $env:SONAR_LANGUAGE     = "cs"
 
 python scripts/sonar/fetch_issues.py
-# Output: output/issues.json
 ```
 
-### Batch issues
+Output: `output/issues.json`
+
+### Batch issues by file
 
 ```powershell
 $env:WORKSPACE_ROOT = "C:\repos\SonarTestBadCode"
-$env:MAX_FILES      = "0"
+$env:MAX_FILES      = "0"   # 0 = no cap
 
 python scripts/sonar/batch_issues.py
-# Output: output/batches.json
 ```
 
-### Run the AI fix loop
+Output: `output/batches.json`
+
+### Batching strategy
+
+Issues are batched in three tiers:
+
+1. **Per-class** — one file per batch; all its issues go together so the AI has full context
+2. **Per-type** — within each batch, issues are sorted by rule ID so violations of the same rule are adjacent
+3. **Numeric** — `batch_id` 0…N assigned in descending severity order (most critical files first)
+
+### Quick smoke test (no SonarQube needed)
 
 ```powershell
-$env:GITHUB_TOKEN        = "YOUR-GITHUB-TOKEN"
-$env:COPILOT_TOKEN       = "YOUR-COPILOT-PAT"   # optional
-$env:MAX_ISSUES_PER_CALL = "15"
-$env:WORKSPACE_ROOT      = "C:\repos\SonarTestBadCode"
-$env:GITHUB_RUN_ID       = "local"
+python -c "
+import json, os
+os.makedirs('output', exist_ok=True)
+issues = [
+    {'key':'k1','rule':'csharpsquid:S112','severity':'MAJOR','component':'proj:Controllers/HomeController.cs','line':10,'message':'msg','type':'CODE_SMELL'},
+    {'key':'k2','rule':'csharpsquid:S1481','severity':'MINOR','component':'proj:Controllers/HomeController.cs','line':20,'message':'msg','type':'CODE_SMELL'},
+    {'key':'k3','rule':'csharpsquid:S112','severity':'CRITICAL','component':'proj:Services/DataService.cs','line':5,'message':'msg','type':'CODE_SMELL'},
+]
+json.dump({'fetched_at':'2026-06-29','total_fetched':3,'issues':issues}, open('output/issues.json','w'))
+print('Mock issues.json written')
+"
 
-python scripts/ai/fix_batch.py
+$env:WORKSPACE_ROOT = "C:\repos\SonarTestBadCode"
+python scripts/sonar/batch_issues.py
 ```
 
 ---
 
 ## Reference
 
-- `plan.md` — original architecture notes for the scan + batch workflow
-- `ghAPIPlan.md` — AI auto-fix pipeline design (API strategy, scaling, hallucination mitigation)
+- `plan.md` — full architecture of the AI auto-fix GitHub Actions workflow
 - `COMMANDS.md` — quick reference for SonarQube local instance commands

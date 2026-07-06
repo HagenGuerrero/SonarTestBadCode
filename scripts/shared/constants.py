@@ -38,9 +38,6 @@ EXIT_CODE_SUCCESS = 0
 EXIT_CODE_ALL_SKIPPED = 2
 EXIT_CODE_FATAL = 3
 
-# Sub-batching: max issues per single AI call (env var MAX_ISSUES_PER_CALL overrides)
-MAX_ISSUES_PER_CALL = 15
-
 # Output paths (relative to repo root)
 OUTPUT_DIR = "output"
 ISSUES_FILE = "output/issues.json"
