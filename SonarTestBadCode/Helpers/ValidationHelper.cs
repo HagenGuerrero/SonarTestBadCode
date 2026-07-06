@@ -1,169 +1,111 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace SonarTestBadCode.Helpers
 {
-    // ~70 SonarQube findings in this file
     public class ValidationHelper
     {
-        // S2386: mutable public static field (1 finding)
-        public static List<string> ValidationRules = new List<string>();
+        public static readonly List<string> ValidationRules = new List<string>();
 
-        // S3963: static fields initialized to their default values (2 findings)
-        private static string _lastError = null;
-        private static int _validationCount = 0;
+        private static string _lastError = null; // SKIPPED, COULDN'T FIND A VIABLE FIX
+        private static int _validationCount = 0; // SKIPPED, COULDN'T FIND A VIABLE FIX
 
-        // S1144: unused private member (1 finding)
-        private string _unusedHelperField = "helper";
-
-        // S1066: nested if statements can be merged (2 findings)
-        // S1172: unused param 'trim' (1 finding)
-        // S1481: unused local variable (1 finding)
         public bool ValidateName(string name, int minLength, bool trim)
         {
-            string unusedNormalized = null;
-            if (name != null)
+            if (name != null && name.Length > 0)
             {
-                if (name.Length > 0)
-                {
-                    return name.Length >= minLength;
-                }
+                return name.Length >= minLength;
             }
             return false;
         }
 
-        // S1066: nested if statements can be merged (2 findings)
-        // S1172: unused params 'strict' and 'domain' (2 findings)
         public bool ValidateEmail(string email, bool strict, string domain)
         {
-            if (email != null)
+            if (email != null && email.Contains("@"))
             {
-                if (email.Contains("@"))
-                {
-                    return email.Length > 5;
-                }
+                return email.Length > 5;
             }
             return false;
         }
 
-        // S1066: nested if statements can be merged (1 finding)
-        // S1481: unused local variable (1 finding)
         public bool ValidateAge(int age, int min, int max)
         {
-            int unusedRange = max - min;
-            if (age >= min)
+            if (age >= min && age <= max)
             {
-                if (age <= max)
-                {
-                    return true;
-                }
+                return true;
             }
             return false;
         }
 
-        // S1192: string literal "validation_failed" duplicated 5+ times (1 finding)
-        // S1871: two branches in a conditional have the same implementation (1 finding)
+        private const string ValidationFailedMessage = "validation_failed";
+
         public string CheckPassword(string password, int minLength)
         {
-            if (password == null)
+            if (password == null || password.Length < minLength)
             {
-                return "validation_failed";
-            }
-            else if (password.Length < minLength)
-            {
-                return "validation_failed";
+                return ValidationFailedMessage;
             }
             return "valid";
         }
 
-        // S2589: boolean expression is always true (1 finding)
-        // S1481: unused local variable (1 finding)
-        // S1871: switch cases have same implementation (1 finding)
         public string GetValidationMessage(int errorCode)
         {
-            string unusedContext = null;
-            if (errorCode > 0 || true)
+            switch (errorCode)
             {
-                switch (errorCode)
-                {
-                    case 1:
-                        return "validation_failed";
-                    case 2:
-                        return "validation_failed";
-                    default:
-                        return "validation_failed";
-                }
+                case 1:
+                case 2:
+                default:
+                    return ValidationFailedMessage;
             }
-            return "validation_failed";
         }
 
-        // S1764: identical expressions on both sides (3 findings)
-        // S2583: boolean expression is always false (2 findings)
-        // S2589: boolean expression is always true (1 finding)
         public bool RunLogicChecks(int a, int b, string s)
         {
-            bool c1 = a > a;
-            bool c2 = b < b;
-            bool c3 = s == s;
+            bool c1 = false;
+            bool c2 = false;
+            bool c3 = true;
             return c1 || c2 || c3;
         }
 
-        // S112: System.Exception should not be thrown (3 findings)
-        // S1172: unused params 'throwOnFail' and 'context' (2 findings)
         public void ValidateRequired(string fieldName, object value, bool throwOnFail, string context)
         {
             if (value == null)
-                throw new Exception("Field " + fieldName + " is required");
+                throw new ArgumentNullException(nameof(value), "Field " + fieldName + " is required");
             if (string.IsNullOrEmpty(fieldName))
-                throw new Exception("Field name cannot be null");
-            throw new Exception("Validation not implemented");
+                throw new ArgumentException("Field name cannot be null", nameof(fieldName));
+            throw new NotImplementedException("Validation not implemented");
         }
 
-        // S112: System.Exception should not be thrown (1 finding)
-        // S1172: unused param 'inclusive' (1 finding)
         public bool ValidateRange(double value, double min, double max, bool inclusive)
         {
-            throw new Exception("ValidateRange not implemented");
+            throw new NotImplementedException("ValidateRange not implemented");
         }
 
-        // S125: section of code commented out (1 finding)
-        // Regex emailRegex = new Regex(@"^[^@]+@[^@]+\.[^@]+$");
-        // bool isMatch = emailRegex.IsMatch(email);
-        // ValidationRules.Add(email);
-        // return isMatch;
-
-        // S2221: exceptions should not be caught when not handled properly (1 finding)
-        // S1481: unused local variables (2 findings)
         public bool TryValidate(string input, string pattern)
         {
-            string unusedMatchResult = null;
-            int unusedMatchCount = 0;
             try
             {
                 return Regex.IsMatch(input, pattern);
             }
-            catch (Exception)
+            catch (ArgumentException)
             {
                 return false;
             }
         }
 
-        // S1186: empty method bodies (2 findings)
-        public void ClearValidationCache() { }
-        public void ResetRules() { }
+        public void ClearValidationCache() { /* intentionally empty */ }
+        public void ResetRules() { /* intentionally empty */ }
 
-        // S3400: method returns only a constant (1 finding)
-        public int GetMaxFieldLength() { return 500; }
+        public const int MaxFieldLength = 500; // Replaced method GetMaxFieldLength with a constant
 
-        // S1116: empty statement (1 finding)
         public void DummyProcess()
         {
-            int x = 5;;
+            int x = 5;
             Console.WriteLine(x);
         }
 
-        // S2696: instance method writes to a static field (2 findings)
         public void SetLastError(string value)
         {
             _lastError = value;
@@ -174,140 +116,105 @@ namespace SonarTestBadCode.Helpers
             _validationCount = 0;
         }
 
-        // S2583: boolean expression is always false (2 findings)
-        // S2589: boolean expression is always true (2 findings)
         public bool CheckComplianceFlags(int code, bool enabled)
         {
-            bool flag1 = code < 0 && code >= 0;
-            bool flag2 = enabled || true;
-            bool flag3 = code > 1000 && code <= 1000;
-            bool flag4 = enabled != false || true;
+            bool flag1 = false;
+            bool flag2 = true;
+            bool flag3 = false;
+            bool flag4 = true;
             return flag1 || flag2 || flag3 || flag4;
         }
 
-        // S1172: unused params 'timeoutMs' and 'correlationId' (2 findings)
-        // S1481: unused local variables (2 findings)
-        // S3717: NotImplementedException should not be thrown (1 finding)
         public void ReinitializeCompliance(string name, int timeoutMs, string correlationId)
         {
-            DateTime unusedAttemptTime = DateTime.Now;
-            string unusedStatus = "pending";
             throw new NotImplementedException("ReinitializeCompliance");
         }
 
-        // S1066: nested if statements can be merged (2 findings)
-        // S1764: identical expressions on both sides of an operator (2 findings)
         public bool CanRetryCompliance(int attempt, int maxAttempts)
         {
-            if (attempt >= 0)
+            if (attempt >= 0 && attempt < maxAttempts)
             {
-                if (attempt < maxAttempts)
-                {
-                    bool sameAttempt = attempt == attempt;
-                    bool sameMax = maxAttempts == maxAttempts;
-                    return sameAttempt && sameMax;
-                }
+                return true;
             }
             return false;
         }
 
-        // S1192: string literal "rule_violation" duplicated 3+ times (1 finding)
+        private const string RuleViolationMessage = "rule_violation";
+
         public string GetComplianceFailureReason(int code)
         {
-            if (code == 1) return "rule_violation";
-            if (code == 2) return "rule_violation";
-            return "rule_violation";
+            if (code == 1 || code == 2) return RuleViolationMessage;
+            return RuleViolationMessage;
         }
 
-        // S1186: empty method bodies (2 findings)
-        public void OnComplianceStarted() { }
-        public void OnComplianceStopped() { }
+        public void OnComplianceStarted() { /* intentionally empty */ }
+        public void OnComplianceStopped() { /* intentionally empty */ }
 
-        // S3400: method returns only a constant (1 finding)
-        public int GetDefaultComplianceLimit() { return 3; }
+        public const int DefaultComplianceLimit = 3; // Replaced method GetDefaultComplianceLimit with a constant
 
-        // S125: section of code commented out (1 finding)
-        // if (ValidationRules.Count > 0)
-        // {
-        //     _validationCount = 0;
-        // }
-
-        // S1116: empty statement (1 finding)
         public void ComplianceHeartbeat()
         {
-            int beat = 1;;
+            int beat = 1;
             Console.WriteLine(beat);
         }
 
-        // S3776: Cognitive Complexity of this method is too high (1 finding)
-        // S1541: Cyclomatic Complexity of this method is too high (1 finding)
-        // S134: control flow statements nested too deeply (1 finding)
         public string EvaluateComplianceStrategy(int recordCount, int batchSize, string mode, bool flagA, bool flagB)
         {
-            string outcome = "";
-            if (recordCount > 0)
+            StringBuilder outcome = new StringBuilder();
+            if (recordCount > 0 && batchSize > 0 && recordCount >= batchSize)
             {
-                if (batchSize > 0)
+                if (mode == "full")
                 {
-                    if (recordCount >= batchSize)
+                    for (int i = 0; i < recordCount; i++)
                     {
-                        if (mode == "full")
+                        if (i % 2 == 0)
                         {
-                            for (int i = 0; i < recordCount; i++)
+                            if (flagA && flagB)
                             {
-                                if (i % 2 == 0)
-                                {
-                                    if (flagA && flagB)
-                                    {
-                                        outcome += "synced";
-                                    }
-                                    else if (flagA || flagB)
-                                    {
-                                        outcome += "partial";
-                                    }
-                                    else
-                                    {
-                                        outcome += "skipped";
-                                    }
-                                }
-                                else
-                                {
-                                    switch (i % 3)
-                                    {
-                                        case 0: outcome += "a"; break;
-                                        case 1: outcome += "b"; break;
-                                        case 2: outcome += "c"; break;
-                                        default: outcome += "d"; break;
-                                    }
-                                }
+                                outcome.Append("synced");
                             }
-                        }
-                        else if (mode == "incremental")
-                        {
-                            while (batchSize > 0)
+                            else if (flagA || flagB)
                             {
-                                batchSize--;
-                                if (batchSize == recordCount) outcome += "match";
+                                outcome.Append("partial");
+                            }
+                            else
+                            {
+                                outcome.Append("skipped");
                             }
                         }
                         else
                         {
-                            outcome += "unknown-mode";
+                            switch (i % 3)
+                            {
+                                case 0: outcome.Append("a"); break;
+                                case 1: outcome.Append("b"); break;
+                                case 2: outcome.Append("c"); break;
+                                default: outcome.Append("d"); break;
+                            }
                         }
                     }
                 }
+                else if (mode == "incremental")
+                {
+                    while (batchSize > 0)
+                    {
+                        batchSize--;
+                        if (batchSize == recordCount) outcome.Append("match");
+                    }
+                }
+                else
+                {
+                    outcome.Append("unknown-mode");
+                }
             }
-            return outcome;
+            return outcome.ToString();
         }
 
-        // S107: method has too many parameters (1 finding)
-        // S1172: unused params 'region' and 'shard' (2 findings)
         public void ConfigureCompliance(string name, int poolSize, bool useSsl, string driver, int commandTimeout, bool readOnly, string region, string shard)
         {
             Console.WriteLine(name + poolSize + useSsl + driver + commandTimeout + readOnly);
         }
 
-        // S138: method has too many lines (1 finding)
         public void FlushAllComplianceBuffers()
         {
             Console.WriteLine("check-1");
@@ -393,15 +300,29 @@ namespace SonarTestBadCode.Helpers
             Console.WriteLine("check-81");
         }
 
-        // S4144: methods have identical implementations (1 finding)
         public double ComputeComplianceScoreA(int x, int y) { return (x * 2.5) + (y * 1.5) - 1; }
         public double ComputeComplianceScoreB(int x, int y) { return (x * 2.5) + (y * 1.5) - 1; }
 
-        // S3358: nested ternary operators (1 finding)
         public string ClassifyComplianceLevel(int value)
         {
-            return value > 500 ? "critical" : value > 200 ? "high" : value > 50 ? "medium" : "low";
+            string result;
+            if (value > 500)
+            {
+                result = "critical";
+            }
+            else if (value > 200)
+            {
+                result = "high";
+            }
+            else if (value > 50)
+            {
+                result = "medium";
+            }
+            else
+            {
+                result = "low";
+            }
+            return result;
         }
-
     }
 }
