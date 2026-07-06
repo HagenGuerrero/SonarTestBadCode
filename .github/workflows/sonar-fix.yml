@@ -7,10 +7,26 @@ on:
         description: 'SonarQube project keys (comma-separated)'
         required: false
         default: 'sonar-test-bad-code'
-      severities:
-        description: 'Severities to fetch (comma-separated)'
-        required: false
-        default: 'BLOCKER,CRITICAL,MAJOR,MINOR,INFO'
+      severity_blocker:
+        description: 'Include BLOCKER issues'
+        type: boolean
+        default: true
+      severity_critical:
+        description: 'Include CRITICAL issues'
+        type: boolean
+        default: true
+      severity_major:
+        description: 'Include MAJOR issues'
+        type: boolean
+        default: true
+      severity_minor:
+        description: 'Include MINOR issues'
+        type: boolean
+        default: true
+      severity_info:
+        description: 'Include INFO issues'
+        type: boolean
+        default: true
       language_filter:
         description: 'SonarQube language key'
         required: false
@@ -23,11 +39,17 @@ on:
         description: 'Max issues per AI call — lower value reduces hallucination risk'
         required: false
         default: '15'
+      run_copilot_agent:
+        description: 'Fire Copilot Agent Tasks for skipped files (requires COPILOT_PAT)'
+        required: false
+        default: 'false'
+        type: boolean
 
 permissions:
   contents: write
   pull-requests: write
   models: read
+  issues: write
 
 jobs:
   sonar-fix:
@@ -186,11 +208,25 @@ jobs:
       # -----------------------------------------------------------------------
       # Fetch and batch issues
       # -----------------------------------------------------------------------
+      - name: Build severity filter
+        id: severities
+        run: |
+          SEVS=""
+          [ "${{ inputs.severity_blocker }}"  = "true" ] && SEVS="${SEVS}BLOCKER,"
+          [ "${{ inputs.severity_critical }}" = "true" ] && SEVS="${SEVS}CRITICAL,"
+          [ "${{ inputs.severity_major }}"    = "true" ] && SEVS="${SEVS}MAJOR,"
+          [ "${{ inputs.severity_minor }}"    = "true" ] && SEVS="${SEVS}MINOR,"
+          [ "${{ inputs.severity_info }}"     = "true" ] && SEVS="${SEVS}INFO,"
+          SEVS="${SEVS%,}"
+          [ -z "$SEVS" ] && SEVS="BLOCKER,CRITICAL,MAJOR,MINOR,INFO"
+          echo "value=$SEVS" >> "$GITHUB_OUTPUT"
+          echo "Severity filter: $SEVS"
+
       - name: Fetch issues from SonarQube
         env:
           SONARQUBE_URL: http://localhost:9000
           SONAR_PROJECT_KEYS: ${{ inputs.project_keys }}
-          SONAR_SEVERITIES: ${{ inputs.severities }}
+          SONAR_SEVERITIES: ${{ steps.severities.outputs.value }}
           SONAR_LANGUAGE: ${{ inputs.language_filter }}
         run: python scripts/sonar/fetch_issues.py
 
@@ -235,3 +271,17 @@ jobs:
           GITHUB_BASE_BRANCH: agent/fix
           FIX_EXIT_CODE: ${{ steps.fix.outputs.exit_code }}
         run: python scripts/git/create_pr.py
+
+      # Create Copilot Agent Tasks for any batches that fix_batch.py could not fix.
+      # Requires COPILOT_PAT secret: fine-grained PAT with actions:write,
+      # contents:write, issues:write, pull-requests:write.
+      # GITHUB_TOKEN is explicitly rejected by the Agent Tasks API (billing is
+      # user-level). Skips gracefully when the secret is absent.
+      - name: Create Copilot Agent Tasks for skipped files
+        if: steps.fix.outputs.exit_code != '3' && inputs.run_copilot_agent == 'true'
+        env:
+          COPILOT_PAT: ${{ secrets.COPILOT_PAT }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+          GITHUB_BASE_BRANCH: agent/fix
+        run: python scripts/ai/create_copilot_tasks.py
