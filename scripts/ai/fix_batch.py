@@ -96,7 +96,7 @@ def _ensure_prompts_loaded() -> None:
 # User prompt builder
 # ---------------------------------------------------------------------------
 
-def _build_user_prompt(file_path: str, content: str, issues: list[dict]) -> str:
+def _build_user_prompt(file_path: str, content: str, issues: list[dict], note: str = "") -> str:
     lines = [f"File: {file_path}", "", "Issues to fix:"]
     for issue in issues:
         rule = issue.get("rule", "")
@@ -104,6 +104,8 @@ def _build_user_prompt(file_path: str, content: str, issues: list[dict]) -> str:
         severity = issue.get("severity", "")
         message = issue.get("message", "")
         lines.append(f"  Line {line}: [{rule}] {severity} — {message}")
+    if note:
+        lines += ["", f"⚠️ {note}"]
     lines += ["", "File content:", content]
     return "\n".join(lines)
 
@@ -182,7 +184,7 @@ def _sleep_for_retry(resp, attempt: int) -> None:
     time.sleep(wait)
 
 
-def call_ai(content: str, file_path: str, issues: list[dict]) -> tuple[str | None, str | None, dict]:
+def call_ai(content: str, file_path: str, issues: list[dict], note: str = "") -> tuple[str | None, str | None, dict]:
     """Call the AI API with Copilot → GitHub Models fallback.
 
     Returns (text, error_reason, usage) where usage is the API's token-count
@@ -199,7 +201,7 @@ def call_ai(content: str, file_path: str, issues: list[dict]) -> tuple[str | Non
         "model": AI_MODEL,
         "messages": [
             {"role": "system", "content": _SYSTEM_PROMPT},
-            {"role": "user", "content": _build_user_prompt(file_path, content, issues)},
+            {"role": "user", "content": _build_user_prompt(file_path, content, issues, note)},
         ],
         "temperature": 0.2,
         "max_tokens": max_tokens,
@@ -429,28 +431,54 @@ def main() -> int:
         skip_reason: str | None = None
         file_tokens: dict = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
 
+        _COMPLETE_FILE_NOTE = (
+            "You MUST return the COMPLETE file from the very first line to the very last. "
+            "Do NOT return partial content, summaries, or only the changed sections. "
+            "Every single line of the original file must appear in your response."
+        )
+
         for chunk_idx, chunk in enumerate(chunks):
             print(f"  chunk {chunk_idx + 1}/{total_chunks}: {len(chunk)} issues | ~{len(current_content)//4} file tokens")
 
-            raw, api_err, usage = call_ai(current_content, local_path, chunk)
-            if raw is None:
-                skip_reason = api_err or "API call returned no data"
-                print(f"  chunk {chunk_idx + 1}: API failed ({skip_reason}) — stopping sub-batch for this file")
+            code: str | None = None
+            fixes: list[str] = []
+            chunk_skip_reason: str | None = None
+            chunk_usage: dict = {}
+
+            for attempt in range(2):
+                note = _COMPLETE_FILE_NOTE if attempt > 0 else ""
+                raw, api_err, usage = call_ai(current_content, local_path, chunk, note=note)
+
+                for k in file_tokens:
+                    file_tokens[k] += usage.get(k, 0)
+                chunk_usage = usage
+
+                if raw is None:
+                    chunk_skip_reason = api_err or "API call returned no data"
+                    print(f"  chunk {chunk_idx + 1}: API failed ({chunk_skip_reason}) — stopping sub-batch for this file")
+                    break
+
+                parsed_code, parsed_fixes = parse_response(raw)
+                if parsed_code is None:
+                    chunk_skip_reason = "AI response missing <CODE> section"
+                    print(f"  chunk {chunk_idx + 1}: {chunk_skip_reason} — stopping")
+                    break
+
+                ok, val_reason = validate_code(parsed_code, current_content)
+                if not ok:
+                    if attempt == 0 and "size ratio" in val_reason:
+                        print(f"  chunk {chunk_idx + 1}: {val_reason} — retrying with complete-file reminder")
+                        continue
+                    chunk_skip_reason = f"validation failed: {val_reason}"
+                    print(f"  chunk {chunk_idx + 1}: {chunk_skip_reason} — stopping")
+                    break
+
+                code = parsed_code
+                fixes = parsed_fixes
                 break
 
-            for k in file_tokens:
-                file_tokens[k] += usage.get(k, 0)
-
-            code, fixes = parse_response(raw)
             if code is None:
-                skip_reason = "AI response missing <CODE> section"
-                print(f"  chunk {chunk_idx + 1}: {skip_reason} — stopping")
-                break
-
-            ok, val_reason = validate_code(code, current_content)
-            if not ok:
-                skip_reason = f"validation failed: {val_reason}"
-                print(f"  chunk {chunk_idx + 1}: {skip_reason} — stopping")
+                skip_reason = chunk_skip_reason
                 break
 
             Path(abs_path).write_text(code, encoding="utf-8")
@@ -458,7 +486,7 @@ def main() -> int:
             all_fixes.extend(fixes)
             chunks_done += 1
             print(f"  chunk {chunk_idx + 1}: OK — {len(fixes)} fix line(s) | "
-                  f"{usage.get('total_tokens', 0):,} tokens")
+                  f"{chunk_usage.get('total_tokens', 0):,} tokens")
 
         usage_to_store = file_tokens if any(file_tokens.values()) else None
 
