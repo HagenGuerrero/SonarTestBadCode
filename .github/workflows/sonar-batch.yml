@@ -52,9 +52,9 @@ concurrency:
   group: sonar-batch-${{ github.ref }}
   cancel-in-progress: true
 
-# Read-only: no commits, no PRs — artifacts are the only output.
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   sonar-batch:
@@ -266,27 +266,74 @@ jobs:
         run: python scripts/sonar/batch_issues.py
 
       # -----------------------------------------------------------------------
-      # Publish artifacts — no git commits, no PRs.
-      # Downstream fix workflows download these by artifact name or run_id,
-      # both of which are printed in the step summary below.
+      # Commit output files and open PR to the agent branch.
+      # The PR branch is forked from the scanned HEAD so it carries both the
+      # latest code and the fresh batch files — the fix workflow only needs to
+      # check out the merged agent branch to have everything it needs.
       # -----------------------------------------------------------------------
-      - name: Upload batch artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: sonar-batch-${{ github.sha }}-run-${{ github.run_number }}
-          path: output/
-          retention-days: 7
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Ensure agent branch exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git ls-remote --exit-code origin refs/heads/agent > /dev/null 2>&1; then
+            echo "agent branch already exists"
+          else
+            git checkout -b agent
+            git push origin agent
+            echo "Created agent branch from current HEAD"
+          fi
+
+      - name: Commit output files and open PR to agent
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_BRANCH="sonar/batch-${{ github.run_number }}"
+
+          # Branch off the scanned commit so the PR carries the latest code.
+          git checkout -b "$PR_BRANCH"
+
+          # output/ is gitignored — force-add the two batch files.
+          git add -f output/issues.json output/batches.json
+          git commit -m "ci: sonar batch — run #${{ github.run_number }} @ ${{ github.sha }}"
+          git push origin "$PR_BRANCH"
+
+          ISSUES_COUNT=$(python3 -c \
+            "import json; d=json.load(open('output/issues.json')); print(d['total_fetched'])")
+          BATCHES_COUNT=$(python3 -c \
+            "import json; d=json.load(open('output/batches.json')); print(d['total_batches'])")
+
+          PR_URL=$(gh pr create \
+            --title "ci: sonar batch — run #${{ github.run_number }} @ ${{ github.ref_name }}" \
+            --body "$(cat << EOF
+          ## SonarQube Batch — Run #${{ github.run_number }}
+
+          | Metric | Value |
+          |--------|-------|
+          | Commit scanned | \`${{ github.sha }}\` |
+          | Source branch  | \`${{ github.ref_name }}\` |
+          | Issues fetched | ${ISSUES_COUNT} |
+          | Batches created | ${BATCHES_COUNT} |
+          | Severities | ${{ steps.severities.outputs.value }} |
+          | Language | ${{ inputs.language_filter || 'cs' }} |
+
+          Merging this PR into \`agent\` gives the fix workflow both the latest code and the pre-built batch files — no re-scan needed.
+          EOF
+          )" \
+            --base agent \
+            --head "$PR_BRANCH")
+
+          echo "PR_URL=${PR_URL}" >> "$GITHUB_ENV"
+          echo "ISSUES_COUNT=${ISSUES_COUNT}" >> "$GITHUB_ENV"
+          echo "BATCHES_COUNT=${BATCHES_COUNT}" >> "$GITHUB_ENV"
 
       - name: Write step summary
         if: always()
         run: |
-          ISSUES_COUNT=$(python3 -c \
-            "import json; d=json.load(open('output/issues.json')); print(d['total_fetched'])" \
-            2>/dev/null || echo "N/A")
-          BATCHES_COUNT=$(python3 -c \
-            "import json; d=json.load(open('output/batches.json')); print(d['total_batches'])" \
-            2>/dev/null || echo "N/A")
-
           cat >> "$GITHUB_STEP_SUMMARY" << EOF
           ## SonarQube Batch — Run #${{ github.run_number }}
 
@@ -294,12 +341,9 @@ jobs:
           |--------|-------|
           | Commit | \`${{ github.sha }}\` |
           | Branch | \`${{ github.ref_name }}\` |
-          | Issues fetched | ${ISSUES_COUNT} |
-          | Batches created | ${BATCHES_COUNT} |
+          | Issues fetched | ${ISSUES_COUNT:-N/A} |
+          | Batches created | ${BATCHES_COUNT:-N/A} |
           | Severities | ${{ steps.severities.outputs.value }} |
           | Language | ${{ inputs.language_filter || 'cs' }} |
-          | Artifact | \`sonar-batch-${{ github.sha }}-run-${{ github.run_number }}\` |
-          | Run ID | \`${{ github.run_id }}\` |
-
-          > Pass the **Run ID** to a downstream fix workflow via \`workflow_dispatch\` to consume these artifacts without re-scanning.
+          | Pull request | ${PR_URL:-N/A} |
           EOF
