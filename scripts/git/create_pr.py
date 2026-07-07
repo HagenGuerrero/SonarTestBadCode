@@ -32,6 +32,7 @@ _RUN_NUMBER = os.environ.get("GITHUB_RUN_NUMBER", "0")
 _RUN_ID = os.environ.get("GITHUB_RUN_ID", "local")
 _BASE_BRANCH = os.environ.get("GITHUB_BASE_BRANCH", "agent/fix")
 _FIX_EXIT_CODE = os.environ.get("FIX_EXIT_CODE", "0")
+_WORKFLOW_NAME = os.environ.get("WORKFLOW_NAME", "")
 
 
 # ---------------------------------------------------------------------------
@@ -84,7 +85,8 @@ def _build_pr_body(results: list[dict]) -> str:
     lines = [
         "## SonarQube AI Auto-Remediation",
         "",
-        f"**Run:** #{_RUN_NUMBER} &nbsp;|&nbsp; **ID:** `{_RUN_ID}`",
+        f"**Run:** #{_RUN_NUMBER} &nbsp;|&nbsp; **ID:** `{_RUN_ID}`"
+        + (f" &nbsp;|&nbsp; **Workflow:** {_WORKFLOW_NAME}" if _WORKFLOW_NAME else ""),
         "",
     ]
 

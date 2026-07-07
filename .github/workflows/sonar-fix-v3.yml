@@ -339,6 +339,7 @@ jobs:
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
           GITHUB_BASE_BRANCH: agent/fix
           FIX_EXIT_CODE: ${{ steps.fix.outputs.exit_code }}
+          WORKFLOW_NAME: ${{ github.workflow }}
         run: python scripts/git/create_pr.py
 
       # Create Copilot Agent Tasks for any batches that fix_batch.py could not fix.

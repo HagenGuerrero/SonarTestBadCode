@@ -1,6 +1,9 @@
-name: SonarQube — Fetch & Batch Issues
+name: SonarQube — Scan & Batch Issues
 
 on:
+  push:
+    branches:
+      - dev
   workflow_dispatch:
     inputs:
       project_keys:
@@ -28,27 +31,33 @@ on:
         type: boolean
         default: true
       language_filter:
-        description: 'SonarQube language key'
+        description: 'SonarQube language key (e.g. cs, java, py)'
         required: false
         default: 'cs'
       max_files:
         description: 'Max files to batch (0 = unlimited)'
         required: false
         default: '0'
+      quality_profile_path:
+        description: 'Repo-relative path to the quality profile XML'
+        required: false
+        default: 'sonar/quality-profile-cs.xml'
+      solution_path:
+        description: 'Repo-relative path to the .sln or .csproj to build'
+        required: false
+        default: 'SonarTestBadCode.sln'
 
+# Cancel any in-flight run for the same branch so only the latest push wins.
+concurrency:
+  group: sonar-batch-${{ github.ref }}
+  cancel-in-progress: true
+
+# Read-only: no commits, no PRs — artifacts are the only output.
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   sonar-batch:
-    # Only run when dispatched from the agent/batching branch.
-    if: github.ref == 'refs/heads/agent/batching'
-    # ubuntu-latest: required for SonarQube service container (Linux image).
-    # .NET Framework 4.8 is built via Mono MSBuild installed from the official
-    # Mono Project repository (Ubuntu apt does not ship mono-msbuild).
-    # GitHub-hosted Windows runners use Docker CE (not Desktop) and cannot run
-    # Linux containers, so the runner must stay on Ubuntu.
     runs-on: ubuntu-latest
 
     services:
@@ -123,56 +132,66 @@ jobs:
 
       - name: Bootstrap — generate token and create project
         run: |
+          # Create a SonarQube project for each key in the comma-separated list
+          PROJECT_KEYS="${{ inputs.project_keys || 'sonar-test-bad-code' }}"
+          for KEY in $(echo "$PROJECT_KEYS" | tr ',' '\n'); do
+            KEY=$(echo "$KEY" | xargs)  # trim whitespace
+            curl -s -X POST -u "admin:admin" \
+              "http://localhost:9000/api/projects/create" \
+              -d "project=${KEY}&name=${KEY}" > /dev/null || true
+            echo "Project created (or already exists): ${KEY}"
+          done
+
           TOKEN_JSON=$(curl -sf -X POST -u "admin:admin" \
             "http://localhost:9000/api/user_tokens/generate" \
             -d "name=ci-token-${{ github.run_number }}")
           TOKEN=$(echo "$TOKEN_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)['token'])")
-
-          curl -s -X POST -u "admin:admin" \
-            "http://localhost:9000/api/projects/create" \
-            -d "project=sonar-test-bad-code&name=SonarTestBadCode" > /dev/null || true
 
           echo "SONARQUBE_TOKEN=$TOKEN" >> "$GITHUB_ENV"
           echo "Bootstrap complete — token and project ready"
 
       - name: Import quality profile
         run: |
-          # "Sonar way" is a built-in read-only profile — restore rejects that name.
-          # Rename it to a custom name in the XML before uploading.
-          sed 's|<name>Sonar way</name>|<name>CI-Profile-cs</name>|' \
-            sonar/quality-profile-cs.xml > /tmp/ci-profile-cs.xml
+          PROFILE_PATH="${{ inputs.quality_profile_path || 'sonar/quality-profile-cs.xml' }}"
+          LANGUAGE="${{ inputs.language_filter || 'cs' }}"
+          PROFILE_NAME="CI-Profile-${LANGUAGE}"
 
-          PROFILE_RESP=$(curl -sf -X POST -u "admin:admin" \
+          # "Sonar way" is a built-in read-only profile — rename before uploading.
+          sed "s|<name>Sonar way</name>|<name>${PROFILE_NAME}</name>|" \
+            "${PROFILE_PATH}" > /tmp/ci-profile.xml
+
+          curl -sf -X POST -u "admin:admin" \
             "http://localhost:9000/api/qualityprofiles/restore" \
-            -F "backup=@/tmp/ci-profile-cs.xml")
+            -F "backup=@/tmp/ci-profile.xml"
 
           curl -sf -X POST -u "admin:admin" \
             "http://localhost:9000/api/qualityprofiles/set_default" \
-            --data-urlencode "language=cs" \
-            --data-urlencode "qualityProfile=CI-Profile-cs"
+            --data-urlencode "language=${LANGUAGE}" \
+            --data-urlencode "qualityProfile=${PROFILE_NAME}"
 
-          echo "Quality profile 'CI-Profile-cs' imported and set as default for C#"
+          echo "Quality profile '${PROFILE_NAME}' imported and set as default for ${LANGUAGE}"
 
       # -----------------------------------------------------------------------
       # SonarQube scan
+      # The scanner registers a single project key; use the first in the list.
+      # Multi-project fetching is handled downstream by fetch_issues.py.
       # -----------------------------------------------------------------------
-      - name: Configure git identity
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
       - name: SonarScanner begin
         run: |
+          FIRST_KEY=$(echo "${{ inputs.project_keys || 'sonar-test-bad-code' }}" \
+            | cut -d',' -f1 | xargs)
           dotnet sonarscanner begin \
-            /k:"sonar-test-bad-code" \
+            /k:"${FIRST_KEY}" \
             /d:sonar.host.url="http://localhost:9000" \
             /d:sonar.login="$SONARQUBE_TOKEN" \
             /d:sonar.exclusions="scripts/**,output/**"
 
-      - name: Build (.NET Framework 4.8 via dotnet MSBuild)
+      - name: Build
         env:
           FrameworkPathOverride: /usr/lib/mono/4.8-api/
-        run: dotnet msbuild SonarTestBadCode.sln /p:Configuration=Release
+        run: |
+          dotnet msbuild "${{ inputs.solution_path || 'SonarTestBadCode.sln' }}" \
+            /p:Configuration=Release
 
       - name: SonarScanner end
         run: dotnet sonarscanner end /d:sonar.login="$SONARQUBE_TOKEN"
@@ -197,13 +216,8 @@ jobs:
             STATUS=$(curl -sf -u "$SONARQUBE_TOKEN:" "$CE_TASK_URL" \
               | python3 -c "import json,sys; print(json.load(sys.stdin)['task']['status'])")
             echo "  attempt $i: $STATUS"
-            if [ "$STATUS" = "SUCCESS" ]; then
-              break
-            fi
-            if [ "$STATUS" = "FAILED" ]; then
-              echo "CE task FAILED"
-              exit 1
-            fi
+            if [ "$STATUS" = "SUCCESS" ]; then break; fi
+            if [ "$STATUS" = "FAILED" ]; then echo "CE task FAILED"; exit 1; fi
             sleep 5
           done
           if [ "$STATUS" != "SUCCESS" ]; then
@@ -217,12 +231,20 @@ jobs:
       - name: Build severity filter
         id: severities
         run: |
+          # When triggered by push, boolean inputs are empty strings.
+          # ${VAR:-true} defaults each flag to true so all severities are included.
+          BLOCKER="${{ inputs.severity_blocker }}"
+          CRITICAL="${{ inputs.severity_critical }}"
+          MAJOR="${{ inputs.severity_major }}"
+          MINOR="${{ inputs.severity_minor }}"
+          INFO="${{ inputs.severity_info }}"
+
           SEVS=""
-          [ "${{ inputs.severity_blocker }}"  = "true" ] && SEVS="${SEVS}BLOCKER,"
-          [ "${{ inputs.severity_critical }}" = "true" ] && SEVS="${SEVS}CRITICAL,"
-          [ "${{ inputs.severity_major }}"    = "true" ] && SEVS="${SEVS}MAJOR,"
-          [ "${{ inputs.severity_minor }}"    = "true" ] && SEVS="${SEVS}MINOR,"
-          [ "${{ inputs.severity_info }}"     = "true" ] && SEVS="${SEVS}INFO,"
+          [ "${BLOCKER:-true}"  = "true" ] && SEVS="${SEVS}BLOCKER,"
+          [ "${CRITICAL:-true}" = "true" ] && SEVS="${SEVS}CRITICAL,"
+          [ "${MAJOR:-true}"    = "true" ] && SEVS="${SEVS}MAJOR,"
+          [ "${MINOR:-true}"    = "true" ] && SEVS="${SEVS}MINOR,"
+          [ "${INFO:-true}"     = "true" ] && SEVS="${SEVS}INFO,"
           SEVS="${SEVS%,}"
           [ -z "$SEVS" ] && SEVS="BLOCKER,CRITICAL,MAJOR,MINOR,INFO"
           echo "value=$SEVS" >> "$GITHUB_OUTPUT"
@@ -231,76 +253,53 @@ jobs:
       - name: Fetch issues from SonarQube
         env:
           SONARQUBE_URL: http://localhost:9000
-          SONAR_PROJECT_KEYS: ${{ inputs.project_keys }}
+          SONAR_PROJECT_KEYS: ${{ inputs.project_keys || 'sonar-test-bad-code' }}
           SONAR_SEVERITIES: ${{ steps.severities.outputs.value }}
-          SONAR_LANGUAGE: ${{ inputs.language_filter }}
+          SONAR_LANGUAGE: ${{ inputs.language_filter || 'cs' }}
         run: python scripts/sonar/fetch_issues.py
 
       - name: Batch issues by file
         env:
           WORKSPACE_ROOT: ${{ github.workspace }}
-          MAX_FILES: ${{ inputs.max_files }}
+          MAX_FILES: ${{ inputs.max_files || '0' }}
+          SCAN_COMMIT_SHA: ${{ github.sha }}
         run: python scripts/sonar/batch_issues.py
 
       # -----------------------------------------------------------------------
-      # Upload artifacts and open review PR
+      # Publish artifacts — no git commits, no PRs.
+      # Downstream fix workflows download these by artifact name or run_id,
+      # both of which are printed in the step summary below.
       # -----------------------------------------------------------------------
-      - name: Upload output as workflow artifact
+      - name: Upload batch artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: sonar-batch-output-run-${{ github.run_number }}
+          name: sonar-batch-${{ github.sha }}-run-${{ github.run_number }}
           path: output/
+          retention-days: 7
 
-      - name: Commit output files and create PR
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Write step summary
+        if: always()
         run: |
-          OUTPUT_BRANCH="sonar/batch-output-${{ github.run_number }}"
-          BASE="agent/batching"
-
-          git checkout -b "$OUTPUT_BRANCH"
-          git add -f output/issues.json output/batches.json
-          git commit -m "ci: sonar batch output — run #${{ github.run_number }}"
-          git push origin "$OUTPUT_BRANCH"
-
           ISSUES_COUNT=$(python3 -c \
-            "import json; d=json.load(open('output/issues.json')); print(d['total_fetched'])")
+            "import json; d=json.load(open('output/issues.json')); print(d['total_fetched'])" \
+            2>/dev/null || echo "N/A")
           BATCHES_COUNT=$(python3 -c \
-            "import json; d=json.load(open('output/batches.json')); print(d['total_batches'])")
+            "import json; d=json.load(open('output/batches.json')); print(d['total_batches'])" \
+            2>/dev/null || echo "N/A")
 
-          PR_URL=$(gh pr create \
-            --title "ci: sonar batch output — run #${{ github.run_number }}" \
-            --body "$(cat << EOF
-          ## SonarQube Batch Output — Run #${{ github.run_number }}
+          cat >> "$GITHUB_STEP_SUMMARY" << EOF
+          ## SonarQube Batch — Run #${{ github.run_number }}
 
           | Metric | Value |
           |--------|-------|
+          | Commit | \`${{ github.sha }}\` |
+          | Branch | \`${{ github.ref_name }}\` |
           | Issues fetched | ${ISSUES_COUNT} |
           | Batches created | ${BATCHES_COUNT} |
           | Severities | ${{ steps.severities.outputs.value }} |
-          | Language filter | ${{ inputs.language_filter }} |
-          | Output branch | \`${OUTPUT_BRANCH}\` |
+          | Language | ${{ inputs.language_filter || 'cs' }} |
+          | Artifact | \`sonar-batch-${{ github.sha }}-run-${{ github.run_number }}\` |
+          | Run ID | \`${{ github.run_id }}\` |
 
-          ### Files
-          - \`output/issues.json\` — raw issues from the SonarQube REST API
-          - \`output/batches.json\` — issues grouped per-class → per-type → numeric batch ID
+          > Pass the **Run ID** to a downstream fix workflow via \`workflow_dispatch\` to consume these artifacts without re-scanning.
           EOF
-          )" \
-            --base "$BASE" \
-            --head "$OUTPUT_BRANCH")
-
-          cat >> "$GITHUB_STEP_SUMMARY" << EOF
-          ## SonarQube Batch Output — Run #${{ github.run_number }}
-
-          | Metric | Value |
-          |--------|-------|
-          | Issues fetched | $ISSUES_COUNT |
-          | Batches created | $BATCHES_COUNT |
-          | Severities | ${{ steps.severities.outputs.value }} |
-          | Language filter | ${{ inputs.language_filter }} |
-          | Output branch | \`$OUTPUT_BRANCH\` |
-          | Pull request | $PR_URL |
-          EOF
-
-          echo "Branch pushed: $OUTPUT_BRANCH"
-          echo "PR created: $PR_URL"
