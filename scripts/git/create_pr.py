@@ -76,11 +76,37 @@ def _load_issue_count() -> int:
         return 0
 
 
+def _parse_fix_lines(fixes: list[str]) -> tuple[list[str], list[tuple[str, str, str]]]:
+    """Split the AI FIXES section into applied lines and (rule, line_no, reason) skipped tuples."""
+    applied, individually_skipped = [], []
+    for entry in fixes:
+        if "SKIPPED" in entry:
+            # Format: "S2221:133: SKIPPED — catch type ambiguous."
+            parts = entry.split(":", 2)
+            rule = parts[0].strip() if len(parts) > 0 else "?"
+            line_no = parts[1].strip() if len(parts) > 1 else "?"
+            reason = parts[2].strip() if len(parts) > 2 else entry
+            individually_skipped.append((rule, line_no, reason))
+        else:
+            applied.append(entry)
+    return applied, individually_skipped
+
+
 def _build_pr_body(results: list[dict]) -> str:
     fixed = [r for r in results if r.get("status") in ("fixed", "fixed_no_change")]
     skipped = [r for r in results if r not in fixed]
     total_issues_addressed = sum(r.get("issues_total", 0) for r in fixed)
     all_skipped = _FIX_EXIT_CODE == "2"
+
+    # Collect per-issue skips from fixed files for the detail section
+    individually_skipped_rows: list[tuple[str, str, str, str]] = []  # (file, rule, line, reason)
+    for r in fixed:
+        fname = os.path.basename(r["local_path"])
+        _, file_skips = _parse_fix_lines(r.get("fixes", []))
+        for rule, line_no, reason in file_skips:
+            individually_skipped_rows.append((fname, rule, line_no, reason))
+
+    total_individually_skipped = len(individually_skipped_rows)
 
     lines = [
         "## SonarQube AI Auto-Remediation",
@@ -103,8 +129,9 @@ def _build_pr_body(results: list[dict]) -> str:
         "| Metric | Value |",
         "|--------|-------|",
         f"| Files fixed | {len(fixed)} |",
-        f"| Files skipped | {len(skipped)} |",
+        f"| Files skipped (entirely) | {len(skipped)} |",
         f"| Issues addressed | {total_issues_addressed} |",
+        f"| Issues skipped by AI | {total_individually_skipped} |",
         f"| Total issues scanned | {_load_issue_count()} |",
         "",
     ]
@@ -113,20 +140,37 @@ def _build_pr_body(results: list[dict]) -> str:
         lines += [
             "### Fixed files",
             "",
-            "| File | Issues | Chunks | Rules applied |",
-            "|------|--------|--------|---------------|",
+            "| File | Issues | Skipped | Chunks | Rules applied |",
+            "|------|--------|---------|--------|---------------|",
         ]
         for r in fixed:
             fname = os.path.basename(r["local_path"])
             n = r.get("issues_total", "?")
             chunks = f"{r.get('chunks_succeeded', '?')}/{r.get('chunks_total', '?')}"
+            applied_lines, file_skips = _parse_fix_lines(r.get("fixes", []))
             rules: set[str] = set()
-            for fix_line in r.get("fixes", []):
+            for fix_line in applied_lines:
                 parts = fix_line.split(":")
                 if parts and parts[0]:
                     rules.add(parts[0])
             rules_str = ", ".join(sorted(rules)) if rules else "—"
-            lines.append(f"| `{fname}` | {n} | {chunks} | {rules_str} |")
+            skipped_count = len(file_skips)
+            skipped_cell = f"**{skipped_count}**" if skipped_count else "—"
+            lines.append(f"| `{fname}` | {n} | {skipped_cell} | {chunks} | {rules_str} |")
+        lines.append("")
+
+    if individually_skipped_rows:
+        lines += [
+            "### Issues skipped by AI",
+            "",
+            "These issues were present in files that were otherwise fixed but the AI marked"
+            " them as individually unresolvable (rule too complex, context ambiguous, etc.).",
+            "",
+            "| File | Rule | Line | Reason |",
+            "|------|------|------|--------|",
+        ]
+        for fname, rule, line_no, reason in individually_skipped_rows:
+            lines.append(f"| `{fname}` | {rule} | {line_no} | {reason} |")
         lines.append("")
 
     if skipped:
