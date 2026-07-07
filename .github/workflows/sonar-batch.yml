@@ -70,73 +70,13 @@ jobs:
 
     steps:
       # -----------------------------------------------------------------------
-      # Notifications
-      # Recipients = GitHub API collaborator emails (public only) ∪ NOTIFY_EMAILS secret.
-      # Required secrets: SMTP_SERVER, SMTP_USERNAME, SMTP_PASSWORD, NOTIFY_FROM.
-      # Optional secrets: SMTP_PORT (default 587), NOTIFY_EMAILS (explicit override list).
+      # Toolchain setup
       # -----------------------------------------------------------------------
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Resolve notification recipients
-        id: notify
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Query the GitHub API for each collaborator's public email.
-          # Users who keep their email private are silently skipped.
-          COLLAB_EMAILS=""
-          COLLABORATORS=$(gh api "repos/${{ github.repository }}/collaborators" \
-            --jq '.[].login' 2>/dev/null || echo "")
-          for USER in $COLLABORATORS; do
-            EMAIL=$(gh api "users/${USER}" --jq '.email // empty' 2>/dev/null || echo "")
-            [ -n "$EMAIL" ] && COLLAB_EMAILS="${COLLAB_EMAILS},${EMAIL}"
-          done
-
-          # Merge collaborator emails with NOTIFY_EMAILS secret, then deduplicate.
-          # NOTIFY_EMAILS guarantees delivery for collaborators with private emails.
-          ALL_EMAILS="${{ secrets.NOTIFY_EMAILS }},${COLLAB_EMAILS}"
-          ALL_EMAILS=$(echo "$ALL_EMAILS" | tr ',' '\n' \
-            | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' \
-            | grep -E '^[^@]+@[^@]+\.[^@]+$' \
-            | sort -u \
-            | tr '\n' ',' \
-            | sed 's/,$//')
-
-          echo "NOTIFY_TO=${ALL_EMAILS}" >> "$GITHUB_ENV"
-          if [ -n "$ALL_EMAILS" ]; then
-            echo "Recipients: ${ALL_EMAILS}"
-          else
-            echo "No recipients found — email steps will be skipped"
-          fi
-
-      - name: Notify — batch started
-        if: env.NOTIFY_TO != ''
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: ${{ secrets.SMTP_SERVER }}
-          server_port: ${{ secrets.SMTP_PORT || '587' }}
-          username: ${{ secrets.SMTP_USERNAME }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          from: ${{ secrets.NOTIFY_FROM }}
-          to: ${{ env.NOTIFY_TO }}
-          subject: "[SonarQube] Batch scan started — ${{ github.repository }} @ ${{ github.ref_name }}"
-          body: |
-            A SonarQube batch scan has started.
-
-            Repository  : ${{ github.repository }}
-            Branch      : ${{ github.ref_name }}
-            Commit      : ${{ github.sha }}
-            Triggered by: ${{ github.actor }}
-            Run         : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-            You will receive another email when the scan and batching are complete.
-
-      # -----------------------------------------------------------------------
-      # Toolchain setup
-      # -----------------------------------------------------------------------
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
@@ -363,35 +303,3 @@ jobs:
 
           > Pass the **Run ID** to a downstream fix workflow via \`workflow_dispatch\` to consume these artifacts without re-scanning.
           EOF
-
-          # Expose counts for the finish notification
-          echo "NOTIFY_ISSUES_COUNT=${ISSUES_COUNT}"   >> "$GITHUB_ENV"
-          echo "NOTIFY_BATCHES_COUNT=${BATCHES_COUNT}" >> "$GITHUB_ENV"
-
-      - name: Notify — batch finished
-        if: always() && env.NOTIFY_TO != ''
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: ${{ secrets.SMTP_SERVER }}
-          server_port: ${{ secrets.SMTP_PORT || '587' }}
-          username: ${{ secrets.SMTP_USERNAME }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          from: ${{ secrets.NOTIFY_FROM }}
-          to: ${{ env.NOTIFY_TO }}
-          subject: "[SonarQube] Batch scan ${{ job.status }} — ${{ github.repository }} @ ${{ github.ref_name }}"
-          body: |
-            The SonarQube batch scan finished with status: ${{ job.status }}
-
-            Repository  : ${{ github.repository }}
-            Branch      : ${{ github.ref_name }}
-            Commit      : ${{ github.sha }}
-            Triggered by: ${{ github.actor }}
-            Run         : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-            Results
-              Issues fetched  : ${{ env.NOTIFY_ISSUES_COUNT }}
-              Batches created : ${{ env.NOTIFY_BATCHES_COUNT }}
-              Artifact        : sonar-batch-${{ github.sha }}-run-${{ github.run_number }}
-              Run ID          : ${{ github.run_id }}
-
-            Pass the Run ID to a downstream fix workflow via workflow_dispatch to consume these artifacts without re-scanning.
