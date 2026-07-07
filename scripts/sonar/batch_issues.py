@@ -39,6 +39,7 @@ from shared.constants import (
 
 WORKSPACE_ROOT = os.environ.get("WORKSPACE_ROOT", os.getcwd())
 MAX_FILES = int(os.environ.get("MAX_FILES", "0"))
+SCAN_COMMIT_SHA = os.environ.get("SCAN_COMMIT_SHA", "")
 
 
 # ---------------------------------------------------------------------------
@@ -253,6 +254,7 @@ def main() -> int:
         total_issues += b["issue_count"]
 
     output = {
+        "scan_commit": SCAN_COMMIT_SHA,
         "total_files_with_issues": len(file_entries),
         "total_batches": len(batches),
         "total_issues": total_issues,

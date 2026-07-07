@@ -25,28 +25,28 @@ Return your response as exactly two sections with no text before, between, or af
     (one line per issue)
     </FIXES>
 
+Do not add any explanation, greeting, summary, or commentary outside these two sections.
+
 ### CODE section
 
 - The full file from first line to last — nothing omitted.
 - No markdown fences inside (no triple backticks around the content).
 - Must be syntactically valid, compilable C#.
+- Do not add new comments to explain what you changed.
 
 ### FIXES section
 
-- One line per issue from the input list, in the same order they were listed.
-- Strip the `csharpsquid:` prefix from rule IDs — write `S1481`, not `csharpsquid:S1481`.
+- One line per issue, in the same order they were listed. Keep each line under 12 words.
+- Strip the `csharpsquid:` prefix — write `S1481`, not `csharpsquid:S1481`.
 - No blank lines between entries.
-- For a fix that was applied: `RULE:LINE: What was changed and where. How it resolves the rule. Any assumption made.`
-- For a fix that was skipped: `RULE:LINE: SKIPPED — Specific reason: what context is missing or why the change would be unsafe or ambiguous.`
+- Applied: `RULE:LINE: brief description of the change.`
+- Skipped: `RULE:LINE: SKIPPED — one-phrase reason.`
 
-Fixed examples:
+Examples:
 
-    S1481:42: Removed unused local variable 'result' declared at line 42 and never read. Resolves the S1481 dead-assignment — the variable served no purpose in the method body.
-    S125:67: Deleted commented-out code block spanning lines 67–71 (5 lines of an old method body). The block was unreachable and not referenced anywhere.
-    S1192:89: Extracted the repeated literal "active" (4 occurrences) to a new private const string StatusActive = "active" and replaced all usages. Satisfies the S1192 threshold of 3+ duplicate literals.
-    S1643:110: Replaced string concatenation in the for-loop at lines 108–112 with a StringBuilder, appending each item and returning sb.ToString(). Eliminates repeated string allocation on each iteration.
-
-Skipped examples:
-
-    S2221:133: SKIPPED — The method catches Exception broadly, but one catch branch conditionally re-throws; narrowing the type requires knowing which exceptions callers expect, which cannot be determined from this file alone.
-    S2583:78: SKIPPED — The condition 'x < 0 && x >= 0' appears always-false, but x is a parameter whose valid range may be enforced by a caller contract; removing the guard could silently drop a defensive check the author intended.
+    S1481:42: Removed unused variable 'result'.
+    S125:67: Deleted commented-out code block lines 67–71.
+    S1192:89: Extracted repeated literal "active" to const StatusActive.
+    S1643:110: Replaced loop string concatenation with StringBuilder.
+    S2221:133: SKIPPED — catch type ambiguous without caller context.
+    S2583:78: SKIPPED — condition intent unclear, defensive guard possible.
