@@ -1,0 +1,171 @@
+name: SonarQube — AI Fix Only
+
+# Reads output/batches.json already committed on the agent-queue branch
+# (put there by sonar-batch.yml), runs the AI fix loop, and opens a PR.
+# No scan, no batch step, no SonarQube container.
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_issues_per_call:
+        description: 'Max issues per AI call — lower reduces hallucination risk'
+        required: false
+        default: '15'
+      base_branch:
+        description: 'PR target branch for the fix PR'
+        required: false
+        default: 'agent-queue'
+      run_copilot_agent:
+        description: 'Fire Copilot Agent Tasks for skipped files (requires COPILOT_PAT)'
+        required: false
+        default: 'false'
+        type: boolean
+
+# Only run from agent-queue — that is the branch with the committed batch files.
+# Dispatching from any other branch will skip the job.
+concurrency:
+  group: sonar-fix-only-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  models: read    # enables GITHUB_TOKEN to call GitHub Models API
+  issues: write   # required by create_copilot_tasks.py
+
+jobs:
+  fix:
+    if: github.ref == 'refs/heads/agent-queue'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # -----------------------------------------------------------------------
+      # Validate that batch files are present before spending any time on setup
+      # -----------------------------------------------------------------------
+      - name: Validate batch files exist
+        run: |
+          if [ ! -f output/batches.json ]; then
+            echo "ERROR: output/batches.json not found on this branch."
+            echo ""
+            echo "This workflow reads batch files committed by sonar-batch.yml."
+            echo "Steps to resolve:"
+            echo "  1. Trigger sonar-batch.yml on the dev branch (or workflow_dispatch)"
+            echo "  2. Merge the resulting sonar/batch-* PR into agent-queue"
+            echo "  3. Dispatch this workflow again from agent-queue"
+            exit 1
+          fi
+
+          if [ ! -f output/issues.json ]; then
+            echo "WARNING: output/issues.json not found — PR summary issue count will show N/A"
+          fi
+
+          SCAN_COMMIT=$(python3 -c \
+            "import json; d=json.load(open('output/batches.json')); print(d.get('scan_commit','unknown'))" \
+            2>/dev/null || echo "unknown")
+          TOTAL=$(python3 -c \
+            "import json; d=json.load(open('output/batches.json')); print(d.get('total_batches','?'))" \
+            2>/dev/null || echo "?")
+          ISSUES=$(python3 -c \
+            "import json; d=json.load(open('output/batches.json')); print(d.get('total_issues','?'))" \
+            2>/dev/null || echo "?")
+
+          echo "Batch file found."
+          echo "  Scanned commit : ${SCAN_COMMIT}"
+          echo "  Batches        : ${TOTAL}"
+          echo "  Issues         : ${ISSUES}"
+
+          echo "SCAN_COMMIT=${SCAN_COMMIT}" >> "$GITHUB_ENV"
+
+      # -----------------------------------------------------------------------
+      # Toolchain — Python only; no Java, no Mono, no SonarQube
+      # -----------------------------------------------------------------------
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: pip install requests
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # -----------------------------------------------------------------------
+      # AI fix loop
+      # -----------------------------------------------------------------------
+      - name: AI fix batches
+        id: fix
+        env:
+          COPILOT_TOKEN: ${{ secrets.COPILOT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAX_ISSUES_PER_CALL: ${{ inputs.max_issues_per_call }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          WORKSPACE_ROOT: ${{ github.workspace }}
+        run: |
+          python scripts/ai/fix_batch.py
+          EXIT=$?
+          echo "exit_code=$EXIT" >> "$GITHUB_OUTPUT"
+          # exit 2 = all skipped (non-fatal) — PR is still created with a warning
+          # exit 3 = fatal — fail the step
+          [ $EXIT -eq 3 ] && exit 1 || exit 0
+
+      - name: Upload fix results as workflow artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonar-fix-only-run-${{ github.run_number }}
+          path: output/
+          retention-days: 7
+
+      # -----------------------------------------------------------------------
+      # PR creation
+      # -----------------------------------------------------------------------
+      - name: Create fix PR
+        if: steps.fix.outputs.exit_code != '3'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+          GITHUB_BASE_BRANCH: ${{ inputs.base_branch || 'agent-queue' }}
+          FIX_EXIT_CODE: ${{ steps.fix.outputs.exit_code }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+        run: python scripts/git/create_pr.py
+
+      # Requires COPILOT_PAT secret — fine-grained PAT with actions:write,
+      # contents:write, issues:write, pull-requests:write.
+      # GITHUB_TOKEN is rejected by the Agent Tasks API (billing is user-level).
+      # Skips gracefully when the secret is absent or the input is false.
+      - name: Create Copilot Agent Tasks for skipped files
+        if: steps.fix.outputs.exit_code != '3' && inputs.run_copilot_agent == 'true'
+        env:
+          COPILOT_PAT: ${{ secrets.COPILOT_PAT }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+          GITHUB_BASE_BRANCH: ${{ inputs.base_branch || 'agent-queue' }}
+        run: python scripts/ai/create_copilot_tasks.py
+
+      # -----------------------------------------------------------------------
+      # Step summary
+      # -----------------------------------------------------------------------
+      - name: Write step summary
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" << EOF
+          ## AI Fix Only — Run #${{ github.run_number }}
+
+          | Metric | Value |
+          |--------|-------|
+          | Branch | \`${{ github.ref_name }}\` |
+          | Scanned commit | \`${SCAN_COMMIT}\` |
+          | Max issues / call | ${{ inputs.max_issues_per_call }} |
+          | Fix exit code | ${{ steps.fix.outputs.exit_code }} |
+          | PR target | \`${{ inputs.base_branch || 'agent-queue' }}\` |
+          EOF
