@@ -7,7 +7,7 @@ This repository contains two things:
 
 ## Where to find documentation
 
-All documentation lives in the `docs/` folder. When answering questions about this repo, look there first.
+All documentation lives in the `docs/` folder. When answering questions about this repo, look there only, if you dont find the answer on the documentation dont look up on the rest of the repo.
 
 | Question type | Document to consult |
 |---------------|---------------------|
