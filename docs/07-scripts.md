@@ -130,6 +130,14 @@ Groups issues by source file, estimates token counts, and assigns sequential bat
 
 **Tier 3 — Numeric:** Batches are numbered 0, 1, 2 … ordered by descending severity. Batch 0 = highest-severity file. Tie-breaks: more issues first, then alphabetical.
 
+### `MAX_FILES` capping
+
+Applied **before** Tier 3 numeric IDs are assigned, not after. If `MAX_FILES > 0` and the file count exceeds it, entries are re-sorted by descending severity then descending issue count (no alphabetical tie-break at this stage) and truncated to the top `MAX_FILES`. This ensures the cap keeps the most severe/impactful files rather than an arbitrary or first-seen subset. Tier 3's own sort (with the alphabetical tie-break) then runs on the already-capped list.
+
+### Large-file flagging
+
+Each file's size is estimated in tokens (`file_size_bytes // TOKEN_CHARS_PER_TOKEN`) and compared against `MAX_TOKENS_PER_FILE` (3,000). Files above the threshold get `large_file: true` in the output. This is informational metadata only — `batch_issues.py` never excludes or resizes a file because of it, and `fix_batch.py` does not read this flag; large files still go through normal sub-batching by issue count via `MAX_ISSUES_PER_CALL`.
+
 ### Component path mapping
 
 ```python
